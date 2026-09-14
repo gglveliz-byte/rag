@@ -41,7 +41,7 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 | Archivo | Líneas Aprox. | Límite (<800) | Responsabilidad Principal |
 | :--- | :---: | :---: | :--- |
 | `run.py` | ~33 | ✅ OK | Lanzador de entrada agnóstico: soporte para Linux/Render con lectura de `$PORT` y `$HOST`, y WindowsSelectorEventLoopPolicy para Windows. |
-| `app/main.py` | ~125 | ✅ OK | Inicialización FastAPI, CORS, montaje de rutas (incluyendo `routes_chat`), lifespan y configuración de loop Windows. |
+| `app/main.py` | ~135 | ✅ OK | Inicialización FastAPI, CORS con soporte wildcard regex y lista explícita, montaje de rutas, lifespan y configuración de loop. |
 | `app/core/config.py` | ~67 | ✅ OK | Configuración con Pydantic Settings (.env) con soporte para DashScope Embeddings (batch_size=10, Singapur) y Qwen LLM (`qwen3.8-flash`, US Virginia). |
 | `app/schemas/chat.py` | ~45 | ✅ OK | Schemas Pydantic para `ChatRequest` (con campo `mode`), `ChatResponse` (con `query_mode`, `is_conversational`, `primary_source`) y `CitationItem`. |
 | `app/llm/llm_client.py` | ~97 | ✅ OK | Cliente HTTP async con httpx (timeout extendido a 90s) para el endpoint OpenAI-compatible de Qwen 3.8 Flash. |
