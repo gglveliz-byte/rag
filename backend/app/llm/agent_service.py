@@ -308,8 +308,14 @@ class GroundedRAGAgent:
         )
 
     async def get_suggested_prompts(self, tenant: TenantContext) -> list[str]:
-        """Extract dynamic questions based on real ingested documents in knowledge base."""
+        """Extract dynamic, pure questions without answers based on real ingested documents."""
         all_chunks = await store_manager.get_all_chunks(tenant.tenant_id)
+        if not all_chunks:
+            docs = await store_manager.get_all_documents(tenant.tenant_id)
+            for d in docs:
+                d_chunks = await store_manager.get_document_chunks(tenant.tenant_id, d.document_id)
+                all_chunks.extend(d_chunks)
+
         if not all_chunks:
             return [
                 "¿Qué temas aborda mi base de conocimiento?",
@@ -317,29 +323,57 @@ class GroundedRAGAgent:
                 "¿Qué información general está registrada?",
             ]
 
+        # 1. Try generating 4 short, crisp questions using the LLM with strict rules
+        try:
+            snippets = [c.content[:160] for c in all_chunks[:5]]
+            ctx = "\n---\n".join(snippets)
+            prompt = (
+                f"Analiza estos extractos de documentos del usuario:\n{ctx}\n\n"
+                "Genera exactamente 4 preguntas sugeridas directas, breves y atractivas (máximo 8 a 10 palabras cada una) "
+                "que un usuario haría para consultar estos temas.\n"
+                "REGLAS OBLIGATORIAS:\n"
+                "1. Cada línea DEBE ser ÚNICAMENTE una pregunta corta (iniciar con ¿ y terminar con ?).\n"
+                "2. PROHIBIDO incluir respuestas, explicaciones, resúmenes o viñetas. Solo la pregunta pura.\n"
+                "3. Devuelve exactamente 4 líneas."
+            )
+            res = await qwen_client.generate_response(
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+                max_tokens=150,
+            )
+            lines = [line.strip().lstrip("-*•0123456789. ") for line in res.strip().splitlines() if line.strip()]
+            clean_questions = [l for l in lines if l.startswith("¿") and l.endswith("?") and len(l) <= 100]
+            if len(clean_questions) >= 3:
+                return clean_questions[:4]
+        except Exception as exc:
+            logger.warning("Dynamic LLM prompt suggestion failed, falling back to deterministic extraction: %s", exc)
+
+        # 2. Deterministic Fallback: Clean titles strictly without embedded paragraphs
         prompts: list[str] = []
         for c in all_chunks:
-            headers = re.findall(r"(?:^|\n)#{1,4}\s*([^\n]+)", c.content)
-            for h in headers:
-                clean_h = re.sub(r"^\d+[\.\d*]*\s*", "", h).strip()
-                clean_h = re.sub(r"^[—\-\*\s]+", "", clean_h).strip()
-                if (
-                    clean_h
-                    and len(clean_h) > 5
-                    and not clean_h.startswith("---")
-                    and "base de conocimiento" not in clean_h.lower()
-                ):
-                    if not clean_h.startswith("¿"):
-                        clean_h = f"¿Qué detalles hay sobre {clean_h}?"
-                    if clean_h not in prompts:
-                        prompts.append(clean_h)
-                        if len(prompts) >= 4:
-                            return prompts
+            matches = re.findall(r"#{1,4}\s*(?:[\d\.]+\s*)?([^\n#]+)", c.content)
+            for m in matches:
+                # If it has a question mark, keep ONLY up to the question mark
+                if "?" in m:
+                    q = m.split("?")[0].strip() + "?"
+                else:
+                    words = [w for w in m.strip().split() if len(w) > 1]
+                    q = "¿Qué detalles hay sobre " + " ".join(words[:6]) + "?"
+
+                # Sanitize
+                q = re.sub(r"^[—\-\*\s]+", "", q).strip()
+                if not q.startswith("¿"):
+                    q = "¿" + q
+                # Filter out generic titles and long paragraphs
+                if len(q) > 10 and len(q) < 80 and "base de conocimiento" not in q.lower() and q not in prompts:
+                    prompts.append(q)
+                    if len(prompts) >= 4:
+                        return prompts
 
         if not prompts:
             docs = await store_manager.get_all_documents(tenant.tenant_id)
             for doc in docs[:4]:
-                prompts.append(f"¿Qué información contiene el archivo {doc.filename}?")
+                prompts.append(f"¿Qué temas cubre el archivo {doc.filename}?")
 
         return prompts[:4]
 

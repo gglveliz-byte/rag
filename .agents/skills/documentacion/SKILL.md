@@ -21,7 +21,7 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 | `src/types/index.ts` | ~132 | ✅ OK | Definiciones TypeScript: documentos, chunks con `embedding` opcional, salud del sistema, modos de consulta (`mode`, `query_mode`) y payload de chat. |
 | `src/services/api.ts` | ~210 | ✅ OK | Cliente Axios con interceptor multi-tenant, endpoints de auth, ingestión, búsqueda semántica, `sendChatMessage` y `fetchChatSuggestions`. |
 | `src/components/LandingPage.tsx` | ~85 | ✅ OK | Vista inicial responsiva: versión panorámica para desktop y vertical para móvil, imagen protegida e inerte, botones exclusivos de interacción. |
-| `src/components/AgentChat.tsx` | ~628 | ✅ OK | Chat de Agente IA con selector HUD de modo (`🎯 Extractos Precisos` vs `📚 Toda la Base`), parafraseo natural sin demoras de pensamiento, respuestas empáticas contextualizadas para temas no indexados, acordeón de fuentes y preguntas dinámicas. |
+| `src/components/AgentChat.tsx` | ~669 | ✅ OK | Chat de Agente IA con selector HUD de modo (`🎯 Extractos Precisos` vs `📚 Toda la Base`), parafraseo natural sin demoras de pensamiento, respuestas empáticas contextualizadas para temas no indexados, y sanitización defensiva de preguntas sugeridas puras sin párrafos. |
 | `src/components/PipelineMonitor.tsx` | ~206 | ✅ OK | Monitor SSE de ingesta con botón de cierre `(x)`, etapas de alto contraste y consola terminal oscura para eventos en tiempo real. |
 | `src/components/FileUploader.tsx` | ~170 | ✅ OK | Panel de subida de archivos locales con autoselección inteligente de la base conectada (MongoDB Atlas / PostgreSQL). |
 | `src/components/DriveImporter.tsx` | ~130 | ✅ OK | Importador de archivos públicos de Google Drive con autoselección de base conectada. |
@@ -42,7 +42,7 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 | `app/core/config.py` | ~67 | ✅ OK | Configuración con Pydantic Settings (.env) con soporte para DashScope Embeddings (batch_size=10, Singapur) y Qwen LLM (`qwen3.8-flash`, US Virginia). |
 | `app/schemas/chat.py` | ~45 | ✅ OK | Schemas Pydantic para `ChatRequest` (con campo `mode`), `ChatResponse` (con `query_mode`, `is_conversational`, `primary_source`) y `CitationItem`. |
 | `app/llm/llm_client.py` | ~97 | ✅ OK | Cliente HTTP async con httpx (timeout extendido a 90s) para el endpoint OpenAI-compatible de Qwen 3.8 Flash. |
-| `app/llm/agent_service.py` | ~304 | ✅ OK | Orquestador RAG dual con parafraseo ágil y natural, respuesta empática contextualizada para temas no indexados sin romper cero alucinación, y modos `precise` y `full`. |
+| `app/llm/agent_service.py` | ~377 | ✅ OK | Orquestador RAG dual con parafraseo ágil y natural, generador de preguntas sugeridas dinámicas y puras (sin respuestas ni párrafos incrustados), respuesta empática contextualizada para temas no indexados y modos `precise` y `full`. |
 | `app/api/routes_chat.py` | ~41 | ✅ OK | Endpoints `POST /api/chat` y `GET /api/chat/suggestions` protegidos por tenant. |
 | `app/api/routes_ingest.py` | ~100 | ✅ OK | Endpoint `POST /api/ingest` de subida de archivos multipart con validación de extensión y tamaño. |
 | `app/api/routes_drive.py` | ~90 | ✅ OK | Endpoint `POST /api/drive/ingest` para descarga e ingesta de documentos desde Google Drive. |

@@ -321,34 +321,43 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
                 <span style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-tertiary)' }}>
                   Preguntas sugeridas (extraídas de tus documentos):
                 </span>
-                {suggestedPrompts.map((prompt, pIdx) => (
-                  <button
-                    key={pIdx}
-                    onClick={() => handleSend(prompt)}
-                    style={{
-                      padding: '0.65rem 1rem',
-                      background: '#FFFFFF',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: 'var(--radius-md)',
-                      fontSize: '0.8rem',
-                      color: 'var(--color-text-primary)',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#000000';
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--color-border)';
-                      e.currentTarget.style.transform = 'none';
-                    }}
-                  >
-                    💬 {prompt}
-                  </button>
-                ))}
+                {suggestedPrompts.map((prompt, pIdx) => {
+                  let cleanPrompt = prompt.trim();
+                  if (cleanPrompt.startsWith('¿') && cleanPrompt.includes('?')) {
+                    cleanPrompt = cleanPrompt.slice(0, cleanPrompt.indexOf('?') + 1);
+                  } else if (cleanPrompt.length > 80) {
+                    cleanPrompt = `${cleanPrompt.slice(0, 80).trim()}...`;
+                  }
+
+                  return (
+                    <button
+                      key={pIdx}
+                      onClick={() => handleSend(cleanPrompt)}
+                      style={{
+                        padding: '0.65rem 1rem',
+                        background: '#FFFFFF',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '0.8rem',
+                        color: 'var(--color-text-primary)',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = '#000000';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--color-border)';
+                        e.currentTarget.style.transform = 'none';
+                      }}
+                    >
+                      💬 {cleanPrompt}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ) : (
