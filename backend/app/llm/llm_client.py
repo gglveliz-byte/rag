@@ -60,7 +60,8 @@ class QwenLLMClient:
         }
 
         try:
-            async with httpx.AsyncClient(timeout=45.0) as client:
+            timeout = httpx.Timeout(90.0, connect=15.0)
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 response = await client.post(url, headers=headers, json=payload)
 
             if response.status_code != 200:

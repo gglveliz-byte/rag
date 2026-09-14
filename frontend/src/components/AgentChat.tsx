@@ -22,6 +22,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
+  const [queryMode, setQueryMode] = useState<'precise' | 'full'>('precise');
   const [expandedCitations, setExpandedCitations] = useState<Record<string, boolean>>({});
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([
     '¿Qué es NeuroChat y quién es su fundador?',
@@ -79,6 +80,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
         query: textToSend,
         top_k: 5,
         score_threshold: 0.45,
+        mode: queryMode,
       });
 
       const assistantMessageId = `assistant_${Date.now()}`;
@@ -89,6 +91,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
         citations: responseData.citations,
         has_grounding: responseData.has_grounding,
         is_conversational: responseData.is_conversational,
+        query_mode: responseData.query_mode || queryMode,
         primary_source: responseData.primary_source,
         primary_score: responseData.primary_score,
         execution_time_ms: responseData.execution_time_ms,
@@ -154,35 +157,92 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleClearChat}
-          style={{
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Mode Selector HUD Toggle */}
+          <div style={{
             display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '0.45rem 0.85rem',
-            background: '#FFFFFF',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            color: 'var(--color-text-secondary)',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#000000';
-            e.currentTarget.style.color = 'var(--color-black)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--color-border)';
-            e.currentTarget.style.color = 'var(--color-text-secondary)';
-          }}
-        >
-          <RotateCcw size={13} />
-          <span>LIMPIAR CHAT</span>
-        </button>
+            background: '#F1F5F9',
+            padding: '3px',
+            borderRadius: '8px',
+            border: '1px solid #CBD5E1',
+            gap: '2px'
+          }}>
+            <button
+              type="button"
+              onClick={() => setQueryMode('precise')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '4px 9px',
+                borderRadius: '6px',
+                border: 'none',
+                fontSize: '0.72rem',
+                fontWeight: queryMode === 'precise' ? 700 : 500,
+                background: queryMode === 'precise' ? '#FFFFFF' : 'transparent',
+                color: queryMode === 'precise' ? '#0F172A' : '#64748B',
+                boxShadow: queryMode === 'precise' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              title="Búsqueda semántica puntual en fragmentos específicos"
+            >
+              <span>🎯 Extracto Preciso</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setQueryMode('full')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '4px 9px',
+                borderRadius: '6px',
+                border: 'none',
+                fontSize: '0.72rem',
+                fontWeight: queryMode === 'full' ? 700 : 500,
+                background: queryMode === 'full' ? '#FFFFFF' : 'transparent',
+                color: queryMode === 'full' ? '#0F172A' : '#64748B',
+                boxShadow: queryMode === 'full' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              title="Analiza toda la información en bruto del documento completo"
+            >
+              <span>📚 Toda la Base</span>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleClearChat}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0.45rem 0.85rem',
+              background: '#FFFFFF',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              color: 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#000000';
+              e.currentTarget.style.color = 'var(--color-black)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--color-border)';
+              e.currentTarget.style.color = 'var(--color-text-secondary)';
+            }}
+          >
+            <RotateCcw size={13} />
+            <span>LIMPIAR CHAT</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Conversation Container */}
@@ -372,16 +432,27 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
                         alignItems: 'center',
                         gap: '6px',
                         fontSize: '0.72rem',
-                        color: '#065F46',
-                        background: '#ECFDF5',
-                        padding: '3px 9px',
+                        color: msg.query_mode === 'full' ? '#0369A1' : '#065F46',
+                        background: msg.query_mode === 'full' ? '#F0F9FF' : '#ECFDF5',
+                        padding: '4px 10px',
                         borderRadius: '6px',
-                        border: '1px solid #A7F3D0'
+                        border: `1px solid ${msg.query_mode === 'full' ? '#BAE6FD' : '#A7F3D0'}`
                       }}>
-                        <ShieldCheck size={12} color="#059669" />
-                        <span>
-                          Respuesta protegida por Cero Alucinación: el dato figura en el archivo: <strong>{msg.primary_source || msg.citations?.[0]?.filename || 'documento'}</strong> {msg.primary_score ? `(${msg.primary_score}% similitud)` : ''}
-                        </span>
+                        {msg.query_mode === 'full' ? (
+                          <>
+                            <FileText size={12} color="#0284C7" />
+                            <span>
+                              Consulta Integral: La IA extrajo y consultó <strong>toda la información registrada</strong> del documento <strong>{msg.primary_source || msg.citations?.[0]?.filename || 'base de conocimiento'}</strong> ({msg.citations?.length || 0} fragmentos en bruto analizados).
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <ShieldCheck size={12} color="#059669" />
+                            <span>
+                              Consulta por Extractos Precisos: La IA consultó fragmentos específicos por similitud semántica ({msg.citations?.length || 0} fragmentos en <strong>{msg.primary_source || msg.citations?.[0]?.filename || 'documento'}</strong> {msg.primary_score ? `• ${msg.primary_score}% coincidencia` : ''}).
+                            </span>
+                          </>
+                        )}
                       </div>
                     )}
 
@@ -445,7 +516,11 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
                           }}
                         >
                           <FileText size={11} color="var(--color-accent-info)" />
-                          <span>{msg.citations.length} fuentes consultadas</span>
+                          <span>
+                            {msg.query_mode === 'full'
+                              ? `${msg.citations.length} fragmentos en bruto procesados`
+                              : `${msg.citations.length} fuentes consultadas`}
+                          </span>
                           {expandedCitations[msg.id] ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
                         </button>
                       </div>

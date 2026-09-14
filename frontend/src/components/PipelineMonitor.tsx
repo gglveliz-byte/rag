@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Activity, CheckCircle2, AlertCircle, Loader2, X } from 'lucide-react';
 import { JobSSEClient } from '../services/sse';
 import { JobItem } from '../types';
 
 interface PipelineMonitorProps {
   jobId: string | null;
   onFinished?: () => void;
+  onClose?: () => void;
 }
 
-export const PipelineMonitor: React.FC<PipelineMonitorProps> = ({ jobId, onFinished }) => {
+export const PipelineMonitor: React.FC<PipelineMonitorProps> = ({ jobId, onFinished, onClose }) => {
   const [jobState, setJobState] = useState<Partial<JobItem>>({
     progress: 0,
     status: 'queued',
@@ -77,24 +78,46 @@ export const PipelineMonitor: React.FC<PipelineMonitorProps> = ({ jobId, onFinis
             Monitor del Pipeline en Tiempo Real (SSE)
           </h3>
         </div>
-        <span
-          className={`badge ${
-            jobState.status === 'completed'
-              ? 'badge-success'
-              : jobState.status === 'failed'
-              ? 'badge-warning'
-              : 'badge-info'
-          }`}
-        >
-          {jobState.status === 'completed' ? (
-            <CheckCircle2 size={12} />
-          ) : jobState.status === 'failed' ? (
-            <AlertCircle size={12} />
-          ) : (
-            <Loader2 size={12} className="spin" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span
+            className={`badge ${
+              jobState.status === 'completed'
+                ? 'badge-success'
+                : jobState.status === 'failed'
+                ? 'badge-warning'
+                : 'badge-info'
+            }`}
+          >
+            {jobState.status === 'completed' ? (
+              <CheckCircle2 size={12} />
+            ) : jobState.status === 'failed' ? (
+              <AlertCircle size={12} />
+            ) : (
+              <Loader2 size={12} className="spin" />
+            )}
+            {jobState.status}
+          </span>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--color-text-secondary)',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '4px'
+              }}
+              title="Cerrar monitor"
+            >
+              <X size={15} />
+            </button>
           )}
-          {jobState.status}
-        </span>
+        </div>
       </div>
 
       {/* Progress bar */}

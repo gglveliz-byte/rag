@@ -151,36 +151,45 @@ class StoreManager:
 
     async def get_all_documents(self, tenant_id: str) -> list[Document]:
         """Fetch documents from PostgreSQL or fallback to MongoDB. Returns [] if offline."""
+        docs: list[Document] = []
         try:
-            return await self.postgres.get_all_documents(tenant_id)
+            docs = await self.postgres.get_all_documents(tenant_id)
         except Exception:
             pass
-        try:
-            return await self.mongo.get_all_documents(tenant_id)
-        except Exception:
-            return []
+        if not docs:
+            try:
+                docs = await self.mongo.get_all_documents(tenant_id)
+            except Exception:
+                pass
+        return docs
 
     async def get_document_chunks(self, tenant_id: str, document_id: str) -> list[Chunk]:
         """Fetch chunks for specific document. Returns [] if offline."""
+        chunks: list[Chunk] = []
         try:
-            return await self.postgres.get_document_chunks(tenant_id, document_id)
+            chunks = await self.postgres.get_document_chunks(tenant_id, document_id)
         except Exception:
             pass
-        try:
-            return await self.mongo.get_document_chunks(tenant_id, document_id)
-        except Exception:
-            return []
+        if not chunks:
+            try:
+                chunks = await self.mongo.get_document_chunks(tenant_id, document_id)
+            except Exception:
+                pass
+        return chunks
 
     async def get_all_chunks(self, tenant_id: str) -> list[Chunk]:
         """Export all chunks for tenant. Returns [] if offline."""
+        chunks: list[Chunk] = []
         try:
-            return await self.postgres.get_all_chunks(tenant_id)
+            chunks = await self.postgres.get_all_chunks(tenant_id)
         except Exception:
             pass
-        try:
-            return await self.mongo.get_all_chunks(tenant_id)
-        except Exception:
-            return []
+        if not chunks:
+            try:
+                chunks = await self.mongo.get_all_chunks(tenant_id)
+            except Exception:
+                pass
+        return chunks
 
     async def get_stats(self, tenant_id: str) -> dict[str, Any]:
         """Get stats for tenant. Returns default zero-stats if offline."""

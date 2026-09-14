@@ -78,6 +78,7 @@ class GroundedRAGAgent:
                 answer=greeting_answer,
                 has_grounding=False,
                 is_conversational=True,
+                query_mode="precise",
                 primary_source=None,
                 primary_score=None,
                 citations=[],
@@ -86,12 +87,107 @@ class GroundedRAGAgent:
                 execution_time_ms=exec_time,
             )
 
-        # 2. Vectorize query using Alibaba DashScope Embeddings (1024 dims)
+        # 2. DUAL MODE HANDLING: Full Raw Document Inspection vs Precise Semantic Chunk Search
+        if request.mode == "full":
+            all_chunks = await store_manager.get_all_chunks(tenant.tenant_id)
+            if not all_chunks:
+                docs = await store_manager.get_all_documents(tenant.tenant_id)
+                for d in docs:
+                    d_chunks = await store_manager.get_document_chunks(tenant.tenant_id, d.document_id)
+                    all_chunks.extend(d_chunks)
+
+            if not all_chunks:
+                exec_time = round((time.perf_counter() - start_time) * 1000, 2)
+                return ChatResponse(
+                    query=query_text,
+                    answer="No hay documentos ni fragmentos indexados en tu base de conocimiento para consultar.",
+                    has_grounding=False,
+                    is_conversational=False,
+                    query_mode="full",
+                    primary_source=None,
+                    primary_score=None,
+                    citations=[],
+                    total_citations=0,
+                    model=qwen_client._model,
+                    execution_time_ms=exec_time,
+                )
+
+            all_chunks.sort(key=lambda c: (c.document_id, c.chunk_index))
+            docs = await store_manager.get_all_documents(tenant.tenant_id)
+            doc_names = {d.document_id: d.filename for d in docs}
+
+            context_blocks: list[str] = []
+            citations: list[CitationItem] = []
+            for ch in all_chunks:
+                fname = doc_names.get(ch.document_id, "Documento")
+                context_blocks.append(f"--- DOCUMENTO: {fname} (Fragmento {ch.chunk_index + 1}) ---\n{ch.content}")
+                citations.append(
+                    CitationItem(
+                        chunk_id=ch.chunk_id,
+                        filename=fname,
+                        content=ch.content,
+                        similarity_score=1.0,
+                        chunk_index=ch.chunk_index,
+                    )
+                )
+
+            primary_doc = citations[0].filename if citations else "Base de Conocimiento"
+            full_raw_context = "\n\n".join(context_blocks)
+
+            full_system_prompt = (
+                "Eres un Agente Especializado con acceso a TODA LA INFORMACIÓN INTEGRAL (en bruto) de los documentos "
+                "de la base de conocimiento privada del usuario.\n\n"
+                "REGLAS:\n"
+                "1. Analiza minuciosamente todo el contexto provisto para responder a la consulta del usuario.\n"
+                "2. Si el usuario solicita un resumen, visión general, detalle específico o análisis comparativo, "
+                "utiliza toda la información disponible en el texto de forma exhaustiva.\n"
+                "3. No inventes información que no esté en el documento.\n"
+                "4. Responde con lenguaje fluido, natural, profesional y en español."
+            )
+
+            messages = [
+                {"role": "system", "content": full_system_prompt},
+                {
+                    "role": "user",
+                    "content": (
+                        f"INFORMACIÓN INTEGRAL DE LA BASE DE CONOCIMIENTO (DOCUMENTO COMPLETO EN BRUTO):\n\n"
+                        f"{full_raw_context}\n\n"
+                        f"CONSULTA DEL USUARIO:\n{query_text}\n\n"
+                        f"Instrucción: Sintetiza y responde con exactitud considerando la totalidad del documento provisto."
+                    ),
+                },
+            ]
+
+            try:
+                answer_text = await qwen_client.generate_response(messages=messages, temperature=0.2, max_tokens=1500)
+            except Exception as e:
+                logger.warning("LLM call in full mode encountered an issue: %s", e)
+                answer_text = (
+                    "El análisis integral del documento tomó más tiempo del esperado por saturación temporal del proveedor. "
+                    "Por favor, intenta nuevamente o consulta temas específicos con el modo 'Extracto Preciso'."
+                )
+
+            exec_time = round((time.perf_counter() - start_time) * 1000, 2)
+
+            return ChatResponse(
+                query=query_text,
+                answer=answer_text,
+                has_grounding=True,
+                is_conversational=False,
+                query_mode="full",
+                primary_source=primary_doc,
+                primary_score=100.0,
+                citations=citations,
+                total_citations=len(citations),
+                model=qwen_client._model,
+                execution_time_ms=exec_time,
+            )
+
+        # 3. PRECISE MODE: Vectorize query using Embeddings (1024 dims) and search top-k chunks
         embedder = get_embedding_service()
         query_embeddings = await embedder.embed([query_text])
         query_vec = query_embeddings[0]
 
-        # 3. Search isolated tenant memory with threshold filtering
         search_results = await store_manager.search(
             tenant_id=tenant.tenant_id,
             embedding=query_vec,
@@ -108,6 +204,7 @@ class GroundedRAGAgent:
                 answer=NO_KNOWLEDGE_RESPONSE,
                 has_grounding=False,
                 is_conversational=False,
+                query_mode="precise",
                 primary_source=None,
                 primary_score=None,
                 citations=[],
@@ -144,7 +241,7 @@ class GroundedRAGAgent:
         primary_source = top_match.source_file or "Documento"
         primary_score = round(top_match.score * 100, 1)
 
-        # 6. Construct grounded prompt for Qwen LLM
+        # 6. Construct grounded prompt for LLM
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {
@@ -159,7 +256,7 @@ class GroundedRAGAgent:
             },
         ]
 
-        # 7. Invoke Qwen LLM with low temperature (0.1)
+        # 7. Invoke LLM with low temperature (0.1)
         answer_text = await qwen_client.generate_response(messages=messages, temperature=0.1)
 
         exec_time = round((time.perf_counter() - start_time) * 1000, 2)
@@ -170,6 +267,7 @@ class GroundedRAGAgent:
             answer=answer_text,
             has_grounding=has_grounding,
             is_conversational=False,
+            query_mode="precise",
             primary_source=primary_source if has_grounding else None,
             primary_score=primary_score if has_grounding else None,
             citations=citations if has_grounding else [],

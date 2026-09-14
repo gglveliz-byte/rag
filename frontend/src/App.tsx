@@ -379,11 +379,12 @@ export const App: React.FC = () => {
 
         {/* Body Container */}
         <main className="content-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-          {/* Active Job SSE Progress Monitor */}
-          {activeJobId && (
+          {/* Active Job SSE Progress Monitor (scoped to upload tabs with close capability) */}
+          {activeJobId && (activeTab === 'upload' || activeTab === 'drive') && (
             <PipelineMonitor
               jobId={activeJobId}
               onFinished={() => checkHealth()}
+              onClose={() => setActiveJobId(null)}
             />
           )}
 

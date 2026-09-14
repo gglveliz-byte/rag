@@ -367,9 +367,24 @@ class PostgresVectorStore(VectorStoreBase):
 
     def _row_to_chunk(self, row: tuple) -> Chunk:
         meta = row[7] if isinstance(row[7], dict) else json.loads(row[7] or "{}")
-        # Embedding may come as pgvector object or list
+        # Embedding may come as pgvector Vector object, list, numpy array or None
         emb = row[4]
-        emb_list = emb.tolist() if hasattr(emb, "tolist") else list(emb)
+        if hasattr(emb, "to_list"):
+            emb_list = emb.to_list()
+        elif hasattr(emb, "tolist"):
+            emb_list = emb.tolist()
+        elif hasattr(emb, "to_numpy"):
+            emb_list = emb.to_numpy().tolist()
+        elif isinstance(emb, (list, tuple)):
+            emb_list = list(emb)
+        elif emb is None:
+            emb_list = []
+        else:
+            try:
+                emb_list = list(emb)
+            except Exception:
+                emb_list = []
+
         return Chunk(
             chunk_id=row[0],
             document_id=row[1],
@@ -380,3 +395,4 @@ class PostgresVectorStore(VectorStoreBase):
             token_count=int(row[6]),
             metadata=meta,
         )
+

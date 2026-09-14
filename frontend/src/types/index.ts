@@ -18,10 +18,12 @@ export interface ChunkItem {
   document_id: string;
   tenant_id: string;
   content: string;
+  embedding?: number[];
   chunk_index: number;
   token_count: number;
   metadata: Record<string, any>;
 }
+
 
 export interface SearchResultItem {
   chunk_id: string;
@@ -97,6 +99,7 @@ export interface ChatMessage {
   citations?: CitationItem[];
   has_grounding?: boolean;
   is_conversational?: boolean;
+  query_mode?: 'precise' | 'full';
   primary_source?: string;
   primary_score?: number;
   model?: string;
@@ -109,6 +112,7 @@ export interface ChatRequestPayload {
   store?: string;
   top_k?: number;
   score_threshold?: number;
+  mode?: 'precise' | 'full';
 }
 
 export interface ChatResponseData {
@@ -116,6 +120,7 @@ export interface ChatResponseData {
   answer: string;
   has_grounding: boolean;
   is_conversational?: boolean;
+  query_mode?: 'precise' | 'full';
   primary_source?: string;
   primary_score?: number;
   citations: CitationItem[];

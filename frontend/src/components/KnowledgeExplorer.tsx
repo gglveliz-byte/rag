@@ -9,6 +9,11 @@ export const KnowledgeExplorer: React.FC = () => {
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [chunks, setChunks] = useState<ChunkItem[]>([]);
   const [chunksLoading, setChunksLoading] = useState(false);
+  const [expandedVectors, setExpandedVectors] = useState<Record<string, boolean>>({});
+
+  const toggleVector = (chunkId: string) => {
+    setExpandedVectors((prev) => ({ ...prev, [chunkId]: !prev[chunkId] }));
+  };
 
   const fetchDocs = async () => {
     setLoading(true);
@@ -108,7 +113,7 @@ export const KnowledgeExplorer: React.FC = () => {
                           {(doc.file_size_bytes / 1024).toFixed(1)} KB
                         </span>
                         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>•</span>
-                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-white)', fontWeight: 500 }}>
+                        <span style={{ fontSize: 'var(--text-xs)', color: '#0F172A', fontWeight: 600 }}>
                           {doc.total_chunks} Chunks
                         </span>
                         {doc.tags?.map((t, idx) => (
@@ -152,7 +157,7 @@ export const KnowledgeExplorer: React.FC = () => {
                     {chunksLoading ? (
                       <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-tertiary)' }}>Cargando chunks...</div>
                     ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', maxHeight: '380px', overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', maxHeight: '420px', overflowY: 'auto' }}>
                         {chunks.map((ch) => (
                           <div
                             key={ch.chunk_id}
@@ -164,10 +169,89 @@ export const KnowledgeExplorer: React.FC = () => {
                               fontSize: 'var(--text-xs)',
                             }}
                           >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-1)' }}>
-                              <span style={{ fontFamily: 'var(--font-mono)' }}>Chunk #{ch.chunk_index + 1}</span>
-                              <span>{ch.token_count} tokens est.</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-tertiary)', marginBottom: 'var(--space-2)', flexWrap: 'wrap', gap: '4px' }}>
+                              <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#0F172A' }}>
+                                Fragmento #{ch.chunk_index + 1}
+                              </span>
+                              <span style={{ color: '#64748B' }}>{ch.token_count} tokens est.</span>
                             </div>
+
+                            {/* Vector Embedding Visualization */}
+                            <div style={{
+                              background: '#F8FAFC',
+                              border: '1px solid #E2E8F0',
+                              borderRadius: 'var(--radius-sm)',
+                              padding: '6px 10px',
+                              marginBottom: '8px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '4px'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{
+                                  fontSize: '0.68rem',
+                                  fontWeight: 700,
+                                  color: '#0369A1',
+                                  fontFamily: 'var(--font-mono)',
+                                  letterSpacing: '0.04em'
+                                }}>
+                                  VECTOR DENSO: {ch.embedding ? `${ch.embedding.length} DIMS` : '1024 DIMS'}
+                                </span>
+                                {ch.embedding && ch.embedding.length > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleVector(ch.chunk_id)}
+                                    style={{
+                                      background: 'none',
+                                      border: 'none',
+                                      color: 'var(--color-accent-info)',
+                                      fontSize: '0.68rem',
+                                      fontWeight: 600,
+                                      cursor: 'pointer',
+                                      padding: 0,
+                                      textDecoration: 'underline'
+                                    }}
+                                  >
+                                    {expandedVectors[ch.chunk_id] ? 'Ocultar vector completo' : 'Inspeccionar vector completo'}
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Vector preview snippet */}
+                              {ch.embedding && ch.embedding.length > 0 && !expandedVectors[ch.chunk_id] && (
+                                <div style={{
+                                  fontSize: '0.67rem',
+                                  fontFamily: 'monospace',
+                                  color: '#475569',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  [{ch.embedding.slice(0, 6).map(v => v.toFixed(4)).join(', ')}, ... +{ch.embedding.length - 6} dims]
+                                </div>
+                              )}
+
+                              {/* Expanded full vector in dark HUD viewer */}
+                              {ch.embedding && ch.embedding.length > 0 && expandedVectors[ch.chunk_id] && (
+                                <div style={{
+                                  background: '#0F172A',
+                                  border: '1px solid #1E293B',
+                                  borderRadius: '4px',
+                                  padding: '8px 10px',
+                                  fontSize: '0.68rem',
+                                  fontFamily: 'monospace',
+                                  color: '#38BDF8',
+                                  maxHeight: '100px',
+                                  overflowY: 'auto',
+                                  wordBreak: 'break-all',
+                                  lineHeight: 1.4,
+                                  marginTop: '4px'
+                                }}>
+                                  [{ch.embedding.map(v => v.toFixed(4)).join(', ')}]
+                                </div>
+                              )}
+                            </div>
+
                             <div style={{ color: 'var(--color-text-primary)', lineHeight: 1.5 }}>
                               {ch.content}
                             </div>
