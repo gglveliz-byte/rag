@@ -1,0 +1,45 @@
+# Environment Variables & Secrets (NEVER COMMIT CREDENTIALS)
+.env
+*.env
+.env.*
+!.env.example
+backend/.env
+
+# Python Virtual Environments & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+backend/.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.mypy_cache/
+
+# Node & Frontend Build Artifacts
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Application Local Storage & Backups
+storage/
+backend/storage/
+*.ragpkg
+*.log
+
+# Scratchpad & Agent Test Runs
+scratch/
+.tempmediaStorage/
+
+# Operating System Files
+.DS_Store
+Thumbs.db

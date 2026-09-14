@@ -1,0 +1,334 @@
+# Base de Conocimiento — NeuroChat
+
+> Documento oficial para alimentar el conocimiento de un agente conversacional.
+> Prohibido extraer o mencionar precios. Solo información conceptual y funcional.
+> © 2026 NEURO IA S.A.S — Todos los derechos reservados.
+
+---
+
+## 1. ¿Qué es NeuroChat?
+
+NeuroChat es una plataforma SaaS (Software as a Service) multi-tenant de inteligencia artificial y voz en tiempo real, diseñada para transformar la atención al cliente, las ventas conversacionales, el agendamiento inteligente y la auditoría de calidad empresarial.
+
+Desarrollada y mantenida por **NEURO IA S.A.S**, empresa fundada por **Luis Damián Veliz** (Socio Fundador Mayoritario y Director de Tecnología / CTO). La plataforma opera bajo una arquitectura de IA híbrida con servidores de GPU dedicados, permitiendo ejecutar modelos de lenguaje soberanos  de alta eficiencia para su principal producto NeuroChat.
+
+### 1.1 Filosofía del Producto
+
+NeuroChat no se limita a responder preguntas frecuentes. Actúa como un **cerebro digital autónomo** que:
+
+- Gestiona inventario en tiempo real
+- Procesa pedidos y validaciones de pago con reconocimiento óptico (IA Vision)
+- Agenda, reprograma y cancela citas de forma autónoma
+- Contesta llamadas de voz con inteligencia artificial
+- Audita la calidad de call centers completos con transcripción y evaluación automática, agente de calidad.
+- Permite a desarrolladores B2B integrar toda la suite de IA bajo su propia marca (white-label)
+
+
+## 2. Servicios B2C — Omnicanal para Negocios
+
+NeuroChat permite a cualquier negocio (MiPyME, comercio, profesional independiente) conectar un chatbot con IA a **múltiples canales de mensajería** simultáneamente, con una única lógica de negocio unificada.
+
+### 2.1 Canales Soportados
+
+| Canal | Método de Conexión | Capacidades |
+|-------|-------------------|-------------|
+| **WhatsApp** | OAuth con Meta Cloud API (WhatsApp Business) | Texto, imágenes, botones, listas, llamadas de voz WebRTC |
+| **Facebook Messenger** | OAuth con Meta | Texto, imágenes, botones |
+| **Instagram Direct** | OAuth con Meta | Texto, imágenes |
+| **Telegram** | Token de BotFather | Texto, imágenes, botones |
+| **Web Widget** | Script embedible | Chat completo, mapas, notas de voz, carruseles de productos |
+
+### 2.2 Módulo de Ventas (E-commerce Conversacional)
+
+El sistema de ventas convierte el chat en un embudo de ventas transaccional completo:
+
+**Tipos de producto:**
+- **Producto físico**: Bien tangible con control de stock y envío a domicilio
+- **Producto digital**: Descargable o entregable por internet
+- **Servicio precio fijo**: Tarifa definida (consulta, aseo, etc.)
+- **Cotización**: Sin precio fijo, deriva a leads para contacto humano
+
+**Flujo de venta completo:**
+1. El cliente pregunta por productos → el bot consulta el catálogo 
+2. El cliente elige productos y cantidad → el bot valida stock y crea la orden
+3. El bot muestra los métodos de pago configurados 
+4. El cliente paga por transferencia y sube foto del comprobante
+5. El bot valida el comprobante con IA Vision 
+6. El negocio revisa y aprueba/rechaza desde el panel
+7. Notificaciones en tiempo real  + email
+
+**Estados de una orden:** `pending` → `paid_voucher` → `approved` → `completed` (o `rejected`, `cancelled`)
+
+**Tienda pública:** Cada negocio tiene una tienda en publica con catálogo, precios y canales de contacto. Se genera automáticamente sin necesidad de código.
+
+**Métodos de pago configurables:** Transferencia bancaria, Nequi, Daviplata, Yape, PayPal, efectivo, y métodos personalizados.
+
+**Validación con IA Vision:** Cuando el cliente sube un comprobante de pago, el bot lo verifica automáticamente usando OpenAI Vision para confirmar que es un recibo/transferencia bancaria real antes de aprobar la orden.
+
+**Anti-hallucination guards:** El bot tiene protecciones que impiden que la IA invente precios, cuentas bancarias o productos que no existan en la base de datos.
+
+### 2.3 Módulo de Reservas y Agendamiento
+
+Sistema completo de agendamiento con tres modalidades:
+
+**Modalidad 1 — Cita por hora (`slot`):**
+- Bloques fijos de tiempo (30/60 min configurables)
+- El cliente elige: servicio → sede → fecha → horario exacto
+- Validación de disponibilidad concurrente (cupo máximo por horario)
+- Reprogramación y cancelación desde el chat
+
+**Modalidad 2 — Estadía multi-día (`stay`):**
+- Para hospedaje, alquiler de espacios por noches/unidades
+- Check-in / check-out configurables por servicio
+- Ej: hoteles, cabañas, estacionamientos
+
+**Modalidad 3 — Solicitud flexible (`flexible`):**
+- El cliente describe lo que necesita
+- Queda en `pending_review` para que el negocio evalúe
+- Ideal para paquetes personalizados, suscripciones, planes custom
+
+**Características del sistema de reservas:**
+- Múltiples sedes con horarios, días laborales y bloques de tiempo propios
+- Bloques de indisponibilidad (mantenimiento, almuerzo, feriados)
+- Links públicos para agendar sin pasar por el chat
+- Recordatorios automáticos 2 horas antes vía WhatsApp, Messenger, Instagram, Telegram, o email
+- Pagos con depósito o pago completo, con validación de voucher por IA Vision
+- Panel de agenda con filtros por estado, modalidad, fecha, sede
+- KPIs y gráficos de tendencias en el dashboard
+- Notificaciones en tiempo real al negocio por cada evento (nueva cita, reprogramación, cancelación, pago)
+
+**Estados de una cita:** `pending` → `confirmed` → `completed` (o `cancelled`, `no_show`, `expired`, `pending_review`)
+
+### 2.4 Módulo de Leads (Captura de Prospectos)
+
+El bot captura automáticamente información de prospectos cuando detecta interés en productos o servicios:
+
+- Captura: nombre, teléfono, email, motivo de interés
+- Panel de gestión con estados: Nuevo → Contactado → Convertido → Descartado
+- Detección de duplicados (misma conversación en últimos 5 minutos)
+- Notificaciones en tiempo real al equipo de ventas (email + WebSocket + notificación interna)
+- Funciona en todos los canales (WhatsApp, webchat, Instagram, Messenger, Telegram)
+- Integración con productos tipo cotización (sin precio fijo)
+
+### 2.5 Planes de Cliente B2C
+
+| Plan | Características |
+|------|----------------|
+| **Trial** |herramientas completas (ventas, reservas, leads) |
+| **Básico** | Sin herramientas transaccionales (solo informativo + escalar a humano)|
+| **Pro** | Todas las herramientas |
+| **PAYG** | Pago por uso, herramientas completas |
+
+---
+
+## 3. Servicios B2B — Empresarial
+
+### 3.1 Agente de Calidad (Call Center Quality Audit)
+
+Sistema de auditoría automatizada para call centers y empresas de telecomunicaciones. Permite evaluar la calidad de las llamadas de forma masiva con inteligencia artificial.
+
+**Arquitectura del pipeline:**
+
+```
+Grabaciones de llamadas → (transcripción + diarización) → Agentes IA evaluadores → Revisión Humana (HITL) → Reportes Excel
+```
+
+**Funcionalidades clave:**
+
+**Ingesta masiva de audio:**
+- Subida de grabaciones telefónicas de hasta 60+ minutos
+- Procesamiento asíncrono con colas (Bull Queue + Redis)
+- Soporte para ingesta automatizada vía API PULL (el sistema extrae grabaciones directamente desde la API del cliente) en caso de ser necesario o simplemente se adjunta el audio
+
+**Transcripción hiper-precisa:**
+- Modelo inteligente ejecutado en servidores potentes y especializados para máxima precisión
+- Diarización automática: separa y etiqueta cada hablante (Agente vs Cliente)
+- Alineación temporal palabra por palabra (word-level timestamps)
+- Detección de jingles, música en espera y ruido de fondo
+- Modo transcripción verbatim (literal, sin limpieza)
+
+**Análisis acústico:**
+- Medición de niveles de decibelios (RMS)
+- Detección de silencios prolongados (>15s = tiempos de espera)
+- Clasificación de volumen: tonos normales, gritos, susurros
+- Detección de frustración por cambios bruscos en RMS
+
+**Evaluación por Agentes IA:**
+- Agentes evaluadores configurables por área (Ventas, Soporte Técnico, Cobranzas, etc.)
+- Evaluación multicriterio con puntuación numérica y cualitativa
+- Capa de "Justicia": exonera métricas si el cliente cortó la llamada o hubo interferencia técnica
+- Exigencia de citas textuales (verbatims) de la transcripción para sustentar cada punto evaluado
+- Adherencia a guiones de ventas o protocolos de atención
+
+**Human-in-the-Loop (HITL):**
+- Dashboard de revisión visual con transcripción sincronizada al audio
+- El analista humano escucha la llamada, lee los subtítulos, revisa la puntuación de la IA
+- Puede ajustar la calificación antes del dictamen final
+- Feedback iterativo que realimenta al agente IA
+
+**Reportes exportables:**
+- Generación de reportes ejecutivos en Excel con formato profesional
+- Datos estructurados por agente humano, área, fechas
+- Métricas de calidad, adherencia, resolución al primer contacto (FCR)
+- Nombre del agente evaluado incluido en cada reporte
+
+**Tipos de cliente B2B:**
+- `agente_calidad`: Cliente que usa el sistema de auditoría de llamadas
+- `agente_web`: Cliente que usa el chatbot web B2B.
+- `otros`: Configuración personalizada
+
+### 3.2 Agente Web B2B (Chatbot Corporativo)
+
+Solución de chatbot web para empresas que necesitan un agente de IA con sus propios datos y API keys:
+
+- Cliente B2B
+- Widget web embedible con su propia marca
+- Conocimiento basado en scraping web de URLs del cliente
+- Carga de documentos PDF para base de conocimiento RAG
+- Integración con APIs externas del cliente (verificación de cobertura, envío de leads a CRMs)
+- Leads enviados directamente al CRM del cliente via API
+- Verificación de cédula ecuatoriana (módulo-10) para validación de identidad
+- OAuth para consumir APIs externas del cliente
+
+
+## 4. Voice IA — Agente de Llamadas con IA
+
+Voice IA  es un motor de comunicación de voz en tiempo real para WhatsApp Business o para llamadas telefónicas normales. Permite que un agente de inteligencia artificial atienda llamadas de voz reales, hable con lenguaje natural, entienda contexto y realice acciones como vender, agendar o resolver consultas.
+
+### 4.1 ¿Cómo funciona?
+
+1. El cliente llama al número de WhatsApp del negocio
+2. Meta Cloud API envía  la salicitud con la oferta SDP al servidor de voice ia
+3. voice ia negocia un canal seguro con Meta  y telefonia
+4. El audio del cliente se recibe en el servidor
+5. FFmpeg decodifica el audio Opus a (formato estándar para IA)
+6. El audio se envía en tiempo real a una ia inteligente.
+7. la ia habla con el cliente en tiempo real, entiende la intención y genera una respuesta de voz
+8. La respuesta (PCM) se recodifica y se envía de vuelta al cliente.
+
+### 4.2 Capacidades
+
+- **Barge-in (interrupción)**: El cliente puede interrumpir a la IA mientras habla. Configurable por umbral de RMS y tiempo de cooldown.
+- **Ganancia de salida**: Volumen de la IA ajustable 
+- **Latencia inferior a 1 segundo**: Tiempo real con transcodificación al vuelo
+- **Disponibilidad 24/7**: Sin esperas, sin líneas ocupadas
+- **SDK desplegable**: Puede ejecutarse como microservicio standalone en un VPS dedicado
+- **Dashboard de monitoreo**: Logs en vivo, gestión de credenciales, ciclo de vida de llamadas
+
+### 4.3 Stack de Voz
+
+| Componente | Tecnología |
+|------------|-----------|
+| Señalización | Meta Cloud API Webhooks |
+| Transporte de audio | WebRTC (node-datachannel), RTP |
+| Transcódificación | FFmpeg (Opus ↔ PCM 16kHz) |
+| Motor de Voz IA | voice ia, tecnologia unica de Neuro IA S.A.S (WebSocket) |
+| Dashboard | HTML5, Vanilla JS, CSS3 |
+
+### 4.4 ¿Para qué sirve?
+
+- Atención al cliente automatizada por voz
+- Soporte técnico hablado
+- Ventas consultivas por llamada
+- Agendamiento de citas por voz
+- Encuestas y calificaciones habladas
+- Cualquier flujo conversacional que requiera voz natural
+
+---
+
+## 5. Desarrollo de Software a Medida y Automatizaciones con IA
+
+NEURO IA S.A.S ofrece servicios de desarrollo de software empresarial a medida con inteligencia artificial integrada:
+
+### 5.1 Automatización de Procesos Empresariales
+
+- Bots personalizados para flujos de trabajo internos
+- Automatización de procesos repetitivos con IA
+- Integración de sistemas legacy con APIs modernas
+- Orquestación de microservicios con colas asíncronas
+- Pipelines de procesamiento de datos con IA
+
+### 5.2 Desarrollo de Soluciones Corporativas
+
+- Plataformas SaaS multi-tenant personalizadas
+- Sistemas de análisis y reporting con IA
+- Dashboards ejecutivos con métricas en tiempo real
+- Motores de recomendación y clasificación inteligente
+- Sistemas de visión artificial (reconocimiento de comprobantes, documentos, etc.)
+
+### 5.3 Integración de IA Empresarial
+
+- Despliegue de modelos de lenguaje en GPU propia (vLLM)
+- Configuración de circuitos de failover entre proveedores de IA
+- Implementación de RAG (Retrieval-Augmented Generation) con bases de conocimiento vectoriales
+- Fine-tuning de prompts y system prompts para casos de uso específicos
+- Evaluación y mitigación de alucinaciones en respuestas de IA
+
+### 5.4 Consultoría Técnica
+
+- Arquitectura de sistemas de IA
+- Diseño de estrategias de automatización
+- Optimización de costos de inferencia de IA
+- Implementación de multi-tenancy y aislamiento de datos
+
+## 7. Canales de Comunicación
+
+### WhatsApp (Cloud API)
+- Conexión mediante OAuth Embedded Signup de Meta
+- Mensajes de texto, imágenes, botones interactivos, listas de opciones
+- Llamadas de voz
+- Plantillas de mensajes aprobadas para notificaciones y recordatorios
+- Webhooks firmados criptográficamente
+
+### Facebook Messenger e Instagram Direct
+- Conexión mediante OAuth de Meta
+- Mensajes de texto e imágenes
+- Botones interactivos
+
+### Telegram
+- Conexión manual con token de BotFather
+- Mensajes de texto, imágenes, botones
+
+### Web Widget
+- Script embedible de menos de 100KB
+- Soporte para Markdown, carruseles de productos, mapas Leaflet
+- Envío de notas de voz
+- Inyección automática en cualquier sitio web
+
+---
+
+## 8. Seguridad y Multi-Tenancy
+
+- **Aislamiento lógico**: Separación estricta por `tenant_id` y `client_id` a nivel de consultas SQL
+- **Firmas HMAC**: Validación criptográfica de cada webhook entrante
+- **Cifrado AES-256**: Tokens de acceso y credenciales de clientes encriptados en base de datos
+- **HttpOnly Session Cookies**: Protección contra XSS
+- **Rate Limiting**: 50 peticiones / 15 minutos en login, límites diarios por plan
+- **Rate Limiting por conversación**: Máximo 50 mensajes IA por usuario final al día
+
+---
+
+
+---
+
+## 10. Información Corporativa
+
+- **Empresa**: NEURO IA S.A.S (Sociedad por Acciones Simplificada)
+- **Fundador**: Luis Damián Veliz — Socio Fundador Mayoritario y Director de Tecnología (CTO)
+- **WhatsApp Comercial**: +593 98 786 5420
+- **Facebook**: https://www.facebook.com/neuroia
+- **Email Comercial / Licencias**: vía WhatsApp
+- **Email Desarrolladores**: info@neuchat.com.ec
+- **Año**: 2026
+- **Licencia**: Comercial Privada — Todos los derechos reservados
+
+---
+
+
+
+contraseña:
+
+K0849217426
+
+AZ38sM?XHkBy8zJs
+
