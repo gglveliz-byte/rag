@@ -15,11 +15,13 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 | Archivo | Líneas Aprox. | Límite (<800) | Responsabilidad Principal |
 | :--- | :---: | :---: | :--- |
 | `src/main.tsx` | ~10 | ✅ OK | Punto de entrada ReactDOM. |
+| `src/vite-env.d.ts` | ~11 | ✅ OK | Declaración de tipos TypeScript para variables de entorno de Vite (`VITE_API_URL`). |
 | `src/App.tsx` | ~430 | ✅ OK | Estado central de navegación, autenticación, monitor SSE acotado a pestañas de subida (`upload`/`drive`) con cierre `onClose` para evitar fugas entre vistas. |
 | `src/index.css` | ~685 | ✅ OK | Variables de diseño, reset, navegación móvil/desktop (`.mobile-tab-nav`, `.sidebar`), modales, y animación fluida de tipeo para el bot. |
 | `src/landing.css` | ~180 | ✅ OK | Estilos de la Landing Page: responsividad móvil/desktop, dock flotante inferior y protección contra copiado/arrastre. |
 | `src/types/index.ts` | ~132 | ✅ OK | Definiciones TypeScript: documentos, chunks con `embedding` opcional, salud del sistema, modos de consulta (`mode`, `query_mode`) y payload de chat. |
-| `src/services/api.ts` | ~210 | ✅ OK | Cliente Axios con interceptor multi-tenant, endpoints de auth, ingestión, búsqueda semántica, `sendChatMessage` y `fetchChatSuggestions`. |
+| `src/services/api.ts` | ~215 | ✅ OK | Cliente Axios con interceptor multi-tenant y baseURL configurable por `VITE_API_URL` para despliegue desacoplado en producción. |
+| `src/services/sse.ts` | ~77 | ✅ OK | Cliente EventSource SSE con soporte de `VITE_API_URL` para monitoreo en tiempo real de ingestión. |
 | `src/components/LandingPage.tsx` | ~85 | ✅ OK | Vista inicial responsiva: versión panorámica para desktop y vertical para móvil, imagen protegida e inerte, botones exclusivos de interacción. |
 | `src/components/AgentChat.tsx` | ~669 | ✅ OK | Chat de Agente IA con selector HUD de modo (`🎯 Extractos Precisos` vs `📚 Toda la Base`), parafraseo natural sin demoras de pensamiento, respuestas empáticas contextualizadas para temas no indexados, y sanitización defensiva de preguntas sugeridas puras sin párrafos. |
 | `src/components/PipelineMonitor.tsx` | ~206 | ✅ OK | Monitor SSE de ingesta con botón de cierre `(x)`, etapas de alto contraste y consola terminal oscura para eventos en tiempo real. |

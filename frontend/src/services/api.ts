@@ -11,8 +11,13 @@ import {
   UserProfile,
 } from '../types';
 
+const rawBase = import.meta.env.VITE_API_URL || '';
+export const API_BASE_URL = rawBase
+  ? (rawBase.endsWith('/api') ? rawBase : `${rawBase.replace(/\/+$/, '')}/api`)
+  : '/api';
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_URL,
   timeout: 60000,
 });
 

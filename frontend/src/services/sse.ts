@@ -23,7 +23,11 @@ export class JobSSEClient {
   }
 
   public connect(): void {
-    const streamUrl = `/api/jobs/${this.jobId}/stream`;
+    const rawBase = import.meta.env.VITE_API_URL || '';
+    const prefix = rawBase
+      ? (rawBase.endsWith('/api') ? rawBase : `${rawBase.replace(/\/+$/, '')}/api`)
+      : '/api';
+    const streamUrl = `${prefix}/jobs/${this.jobId}/stream`;
     this.eventSource = new EventSource(streamUrl);
 
     this.eventSource.addEventListener('progress', (e: MessageEvent) => {

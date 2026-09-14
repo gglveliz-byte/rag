@@ -68,6 +68,10 @@ export const ApiKeysManager: React.FC = () => {
 
   // Dynamically resolve backend endpoint based on current host & port
   const getDynamicApiUrl = () => {
+    const envBase = import.meta.env.VITE_API_URL;
+    if (envBase) {
+      return envBase.replace(/\/api\/?$/, '').replace(/\/+$/, '');
+    }
     if (typeof window !== 'undefined') {
       // In local dev with Vite on port 5173, backend is on port 8000
       if (window.location.port === '5173') {
