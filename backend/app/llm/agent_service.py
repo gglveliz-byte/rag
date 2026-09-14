@@ -13,15 +13,14 @@ from app.vector_stores.store_manager import store_manager
 logger = logging.getLogger("rag_engine.agent_service")
 
 SYSTEM_PROMPT = (
-    "Eres un Agente Especializado con acceso exclusivo a la base de conocimiento privada del usuario.\n\n"
-    "REGLAS INVIOLABLES DE RESPUESTA (CERO ALUCINACIÓN):\n"
-    "1. Responde ÚNICA y EXCLUSIVAMENTE basándote en los fragmentos de contexto proporcionados a continuación.\n"
-    "2. Tienes terminantemente PROHIBIDO utilizar conocimientos previos del mundo exterior o inventar información.\n"
-    "3. Si la respuesta a la pregunta del usuario no se encuentra de forma explícita en los fragmentos proporcionados, "
-    "DEBES responder con sinceridad:\n"
-    "'Este dato no se encuentra registrado en tu base de conocimiento actual.'\n"
-    "4. No intentes deducir, extrapolar ni inventar datos, fechas, cifras, cláusulas o nombres.\n"
-    "5. Mantén un tono profesional, fluido, preciso y en español."
+    "Eres un Asistente Inteligente Especializado en la base de conocimiento privada del usuario.\n\n"
+    "PAUTAS FUNDAMENTALES DE RESPUESTA:\n"
+    "1. PARAFRASEA CON NATURALIDAD Y FLUIDEZ: No copies bloques literales del texto. "
+    "Explica los conceptos con tus propias palabras, de forma clara, ágil, conversacional y profesional.\n"
+    "2. CERO ALUCINACIÓN (FIDELIDAD FACTUAL): Basa cada hecho, nombre propio, función o métrica estrictamente en los fragmentos de contexto provistos. "
+    "No inventes datos que no figuren en la base de conocimiento.\n"
+    "3. RESPUESTA ÁGIL Y DIRECTA AL GRANO: Responde directamente a lo que el usuario consulta, sin introducciones largas ni rodeos para mantener máxima velocidad y dinamismo.\n"
+    "4. TONO: Cercano, humano, inteligente y en español."
 )
 
 GREETING_PATTERNS = [
@@ -29,7 +28,6 @@ GREETING_PATTERNS = [
     r"^(qui[eé]n eres|c[oó]mo te llamas|qu[eé] puedes hacer|qu[eé] eres|ayuda|help)$",
 ]
 
-NO_KNOWLEDGE_RESPONSE = "Este dato no se encuentra registrado en tu base de conocimiento actual."
 
 
 class GroundedRAGAgent:
@@ -196,12 +194,42 @@ class GroundedRAGAgent:
             threshold=request.score_threshold,
         )
 
-        # 4. If no relevant chunks found in tenant documents, return honest absence
+        # 4. If no relevant chunks found in tenant documents, answer naturally with context awareness
         if not search_results:
+            docs = await store_manager.get_all_documents(tenant.tenant_id)
+            doc_names = [d.filename for d in docs] if docs else []
+            doc_ctx = f"Tus documentos registrados son: {', '.join(doc_names)}." if doc_names else "Actualmente no tienes documentos subidos."
+
+            natural_fallback_messages = [
+                {
+                    "role": "system",
+                    "content": (
+                        "Eres el Asistente Inteligente Especializado en la base de conocimiento del usuario.\n"
+                        f"Contexto de la cuenta: {doc_ctx}\n\n"
+                        "El usuario ha realizado una pregunta o comentario cuya información NO figura en sus documentos indexados, "
+                        "o es un tema externo (por ejemplo: talleres mecánicos, vehículos, recetas, o preguntas de por qué algo no está).\n\n"
+                        "INSTRUCCIONES:\n"
+                        "1. Responde con calidez humana, empatía, simpatía y naturalidad en español (NUNCA respondas como un contestador automático ni repitas frases acartonadas).\n"
+                        "2. Explica con amabilidad que sobre ese tema puntual no tienes información cargada en su base de conocimiento.\n"
+                        "3. Si viene al caso, menciona de qué temas tratan sus documentos y que con gusto aprenderás si sube un archivo sobre eso.\n"
+                        "4. NO inventes datos factuales falsos sobre lo que no sabes. Sé breve, fresco y conversacional (1 o 2 párrafos cortos)."
+                    ),
+                },
+                {"role": "user", "content": query_text},
+            ]
+
+            try:
+                fallback_answer = await qwen_client.generate_response(messages=natural_fallback_messages, temperature=0.6, max_tokens=350)
+            except Exception:
+                fallback_answer = (
+                    "No tengo información sobre ese tema en tus documentos actuales. "
+                    "Mi memoria está enfocada en los archivos que has subido a tu base de conocimiento."
+                )
+
             exec_time = round((time.perf_counter() - start_time) * 1000, 2)
             return ChatResponse(
                 query=query_text,
-                answer=NO_KNOWLEDGE_RESPONSE,
+                answer=fallback_answer,
                 has_grounding=False,
                 is_conversational=False,
                 query_mode="precise",
@@ -250,28 +278,31 @@ class GroundedRAGAgent:
                     f"FRAGMENTOS DE CONTEXTO DE LA BASE DE CONOCIMIENTO:\n\n"
                     f"{full_context_str}\n\n"
                     f"PREGUNTA DEL USUARIO:\n{query_text}\n\n"
-                    f"Instrucción: Responde a la pregunta de forma natural y completa basándote únicamente en los fragmentos provistos. "
-                    f"Si el dato puntual no está allí, indícalo claramente sin inventar."
+                    f"Instrucción: Responde parafraseando de forma natural, ágil y al grano basándote únicamente en los hechos provistos. "
+                    f"Explica con tus palabras sin copiar bloques textuales literales."
                 ),
             },
         ]
 
-        # 7. Invoke LLM with low temperature (0.1)
-        answer_text = await qwen_client.generate_response(messages=messages, temperature=0.1)
+        # 7. Invoke LLM with moderate temperature (0.4) for natural paraphrase and quick max_tokens
+        try:
+            answer_text = await qwen_client.generate_response(messages=messages, temperature=0.4, max_tokens=750)
+        except Exception as e:
+            logger.warning("LLM call in precise mode encountered an issue: %s", e)
+            answer_text = "Hubo una interrupción temporal al conectar con el motor de generación. Por favor, reintenta tu consulta en unos momentos."
 
         exec_time = round((time.perf_counter() - start_time) * 1000, 2)
-        has_grounding = NO_KNOWLEDGE_RESPONSE.lower() not in answer_text.lower()
 
         return ChatResponse(
             query=query_text,
             answer=answer_text,
-            has_grounding=has_grounding,
+            has_grounding=True,
             is_conversational=False,
             query_mode="precise",
-            primary_source=primary_source if has_grounding else None,
-            primary_score=primary_score if has_grounding else None,
-            citations=citations if has_grounding else [],
-            total_citations=len(citations) if has_grounding else 0,
+            primary_source=primary_source,
+            primary_score=primary_score,
+            citations=citations,
+            total_citations=len(citations),
             model=qwen_client._model,
             execution_time_ms=exec_time,
         )

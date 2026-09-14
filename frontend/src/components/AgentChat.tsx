@@ -490,7 +490,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
                         border: '1px solid #FDE68A'
                       }}>
                         <Info size={12} color="#D97706" />
-                        <span>Respuesta protegida por Cero Alucinación: el dato no figura en tus documentos.</span>
+                        <span>Conversación natural: tema no registrado en tus documentos actuales.</span>
                       </div>
                     )}
 
