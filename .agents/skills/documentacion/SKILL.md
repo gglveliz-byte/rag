@@ -15,13 +15,14 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 | Archivo | Líneas Aprox. | Límite (<800) | Responsabilidad Principal |
 | :--- | :---: | :---: | :--- |
 | `src/main.tsx` | ~10 | ✅ OK | Punto de entrada ReactDOM. |
-| `src/App.tsx` | ~430 | ✅ OK | Estado central de navegación, autenticación, banner de confirmación auto-removible, pestaña de Agente IA en sidebar y navegación móvil. |
+| `src/App.tsx` | ~429 | ✅ OK | Estado central de navegación, autenticación, banner de confirmación auto-removible, pestaña 'Agente IA' limpia en sidebar y navegación móvil. |
 | `src/index.css` | ~685 | ✅ OK | Variables de diseño, reset, navegación móvil/desktop (`.mobile-tab-nav`, `.sidebar`), modales, y animación fluida de tipeo para el bot (`.bot-typing-bubble`, `.typing-dot`). |
 | `src/landing.css` | ~180 | ✅ OK | Estilos de la Landing Page: responsividad móvil/desktop, dock flotante inferior y protección contra copiado/arrastre. |
 | `src/types/index.ts` | ~127 | ✅ OK | Definiciones TypeScript: documentos, chunks, salud del sistema y payload de chat (`ChatMessage`, `ChatResponseData`, `CitationItem`). |
 | `src/services/api.ts` | ~210 | ✅ OK | Cliente Axios con interceptor multi-tenant, endpoints de auth, ingestión, búsqueda semántica, `sendChatMessage` y `fetchChatSuggestions`. |
 | `src/components/LandingPage.tsx` | ~85 | ✅ OK | Vista inicial responsiva: versión panorámica para desktop y vertical para móvil, imagen protegida e inerte, botones exclusivos de interacción. |
-| `src/components/AgentChat.tsx` | ~669 | ✅ OK | Chat de Agente IA con Qwen 3.8 Flash, animación de tipeo en vivo, 3 niveles de disclaimers de Cero Alucinación, acordeón de citas, sugerencias dinámicas y telemetría RAG en tiempo real. |
+| `src/components/AgentChat.tsx` | ~585 | ✅ OK | Chat de Agente IA con diseño white-label limpio (sin exponer vendors ni stack), animación de tipeo en vivo, 3 niveles de disclaimers de Cero Alucinación, acordeón de citas y sugerencias dinámicas. |
+| `src/components/PipelineMonitor.tsx` | ~184 | ✅ OK | Monitor SSE de ingesta con tarjetas de etapas de alto contraste (verde/azul/gris con textos oscuros legibles) y consola terminal oscura para eventos en vivo. |
 | `src/components/FileUploader.tsx` | ~170 | ✅ OK | Panel de subida de archivos locales con autoselección inteligente de la base conectada (MongoDB Atlas / PostgreSQL). |
 | `src/components/DriveImporter.tsx` | ~130 | ✅ OK | Importador de archivos públicos de Google Drive con autoselección de base conectada. |
 | `src/components/SearchPanel.tsx` | ~190 | ✅ OK | Panel de consulta vectorial semántica con slider de umbral, top-k y autoselección de base activa. |

@@ -100,8 +100,8 @@ export const PipelineMonitor: React.FC<PipelineMonitorProps> = ({ jobId, onFinis
       {/* Progress bar */}
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-1)' }}>
-          <span>{jobState.stage_message}</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-white)' }}>
+          <span style={{ fontWeight: 500, color: '#334155' }}>{jobState.stage_message}</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#0F172A' }}>
             {jobState.progress}%
           </span>
         </div>
@@ -121,26 +121,35 @@ export const PipelineMonitor: React.FC<PipelineMonitorProps> = ({ jobId, onFinis
             <div
               key={st.key}
               style={{
-                padding: 'var(--space-3)',
-                background: isActive ? 'var(--color-bg-elevated)' : 'var(--color-bg-input)',
-                border: `1px solid ${isActive ? 'var(--color-accent-info)' : isDone ? 'rgba(16, 185, 129, 0.3)' : 'var(--color-border)'}`,
+                padding: '0.65rem 0.85rem',
+                background: isDone ? '#F0FDF4' : isActive ? '#EFF6FF' : '#F8FAFC',
+                border: `1px solid ${isDone ? '#86EFAC' : isActive ? '#93C5FD' : '#E2E8F0'}`,
                 borderRadius: 'var(--radius-md)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 'var(--space-2)',
+                gap: '8px',
+                transition: 'all 0.15s ease'
               }}
             >
               <span
                 className="status-dot"
                 style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  flexShrink: 0,
                   background: isDone
-                    ? 'var(--color-accent-success)'
+                    ? '#16A34A'
                     : isActive
-                    ? 'var(--color-accent-info)'
-                    : 'var(--color-gray-600)',
+                    ? '#2563EB'
+                    : '#94A3B8',
                 }}
               />
-              <span style={{ fontSize: 'var(--text-xs)', fontWeight: isActive ? 600 : 400, color: isDone || isActive ? 'var(--color-white)' : 'var(--color-text-tertiary)' }}>
+              <span style={{
+                fontSize: '0.78rem',
+                fontWeight: isDone || isActive ? 700 : 500,
+                color: isDone ? '#15803D' : isActive ? '#1D4ED8' : '#475569'
+              }}>
                 {st.label}
               </span>
             </div>
@@ -148,13 +157,23 @@ export const PipelineMonitor: React.FC<PipelineMonitorProps> = ({ jobId, onFinis
         })}
       </div>
 
-      {/* Real-time event log */}
+      {/* Real-time event log terminal */}
       {logs.length > 0 && (
-        <div style={{ maxHeight: '120px', overflowY: 'auto', background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-2) var(--space-3)', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
+        <div style={{
+          maxHeight: '140px',
+          overflowY: 'auto',
+          background: '#0F172A',
+          border: '1px solid #1E293B',
+          borderRadius: 'var(--radius-md)',
+          padding: '0.65rem 0.85rem',
+          fontSize: '0.75rem',
+          fontFamily: 'monospace',
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)'
+        }}>
           {logs.map((l, idx) => (
-            <div key={idx} style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-              <span style={{ color: 'var(--color-text-tertiary)', marginRight: '6px' }}>[{l.time}]</span>
-              <span style={{ color: 'var(--color-white)' }}>{l.msg}</span>
+            <div key={idx} style={{ lineHeight: 1.6, display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+              <span style={{ color: '#94A3B8', flexShrink: 0 }}>[{l.time}]</span>
+              <span style={{ color: '#38BDF8', fontWeight: 500 }}>{l.msg}</span>
             </div>
           ))}
         </div>

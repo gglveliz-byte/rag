@@ -10,10 +10,6 @@ import {
   FileText,
   ShieldCheck,
   Info,
-  Activity,
-  Cpu,
-  Layers,
-  Search,
 } from 'lucide-react';
 import { sendChatMessage, fetchChatSuggestions } from '../services/api';
 import { ChatMessage } from '../types';
@@ -27,7 +23,6 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [expandedCitations, setExpandedCitations] = useState<Record<string, boolean>>({});
-  const [expandedTelemetry, setExpandedTelemetry] = useState<Record<string, boolean>>({});
   const [suggestedPrompts, setSuggestedPrompts] = useState<string[]>([
     '¿Qué es NeuroChat y quién es su fundador?',
     '¿Cuáles son los canales de mensajería soportados?',
@@ -45,7 +40,6 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
   }, [messages, loading]);
 
   useEffect(() => {
-    // Fetch dynamic suggestions from active tenant documents
     fetchChatSuggestions()
       .then((suggestions) => {
         if (suggestions && suggestions.length > 0) {
@@ -53,19 +47,12 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
         }
       })
       .catch(() => {
-        // Retain default prompts if offline or empty
+        // Fallback to default prompts
       });
   }, []);
 
   const toggleCitation = (msgId: string) => {
     setExpandedCitations((prev) => ({
-      ...prev,
-      [msgId]: !prev[msgId],
-    }));
-  };
-
-  const toggleTelemetry = (msgId: string) => {
-    setExpandedTelemetry((prev) => ({
       ...prev,
       [msgId]: !prev[msgId],
     }));
@@ -104,7 +91,6 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
         is_conversational: responseData.is_conversational,
         primary_source: responseData.primary_source,
         primary_score: responseData.primary_score,
-        model: responseData.model,
         execution_time_ms: responseData.execution_time_ms,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
@@ -112,7 +98,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
       setMessages((prev) => [...prev, assistantMessage]);
 
       // Automatically expand citations if grounded
-      if (responseData.has_grounding && responseData.citations.length > 0) {
+      if (responseData.has_grounding && responseData.citations && responseData.citations.length > 0) {
         setExpandedCitations((prev) => ({ ...prev, [assistantMessageId]: true }));
       }
     } catch (err: any) {
@@ -133,7 +119,6 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
   const handleClearChat = () => {
     setMessages([]);
     setExpandedCitations({});
-    setExpandedTelemetry({});
   };
 
   return (
@@ -156,7 +141,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <h2 style={{ fontSize: '0.98rem', fontWeight: 700, margin: 0, letterSpacing: '-0.02em', color: 'var(--color-black)' }}>
-                Agente IA Especializado (Qwen 3.8 Flash)
+                Agente IA Especializado
               </h2>
               <span className="badge badge-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.68rem', padding: '2px 8px' }}>
                 <ShieldCheck size={11} />
@@ -357,7 +342,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
                   }}>
                     {msg.content}
 
-                    {/* Metadata Footer */}
+                    {/* Metadata Footer (No vendor models exposed) */}
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -369,7 +354,6 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
                       paddingTop: '6px'
                     }}>
                       <span>{msg.timestamp}</span>
-                      {msg.model && <span>• {msg.model}</span>}
                       {msg.execution_time_ms && (
                         <span>• {Math.round(msg.execution_time_ms)}ms</span>
                       )}
@@ -377,7 +361,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
                   </div>
                 </div>
 
-                {/* Protective Zero-Hallucination Disclaimers & Telemetry */}
+                {/* Protective Zero-Hallucination Disclaimers & Sources */}
                 {msg.role === 'assistant' && (
                   <div style={{ marginLeft: '38px', marginTop: '6px', maxWidth: '85%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     
@@ -416,7 +400,7 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
                       }}>
                         <Sparkles size={12} color="#3B82F6" />
                         <span>
-                          Este dato no está explícitamente en la base de conocimiento: es una expresión natural de la LLM (saludo / cortesía).
+                          Este dato no está explícitamente en la base de conocimiento: es una expresión natural del asistente (saludo / cortesía).
                         </span>
                       </div>
                     )}
@@ -439,9 +423,9 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
                       </div>
                     )}
 
-                    {/* Action buttons row: Citations + Telemetry */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
-                      {msg.citations && msg.citations.length > 0 && (
+                    {/* Sources Button */}
+                    {msg.citations && msg.citations.length > 0 && (
+                      <div style={{ marginTop: '2px' }}>
                         <button
                           type="button"
                           onClick={() => toggleCitation(msg.id)}
@@ -464,31 +448,8 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
                           <span>{msg.citations.length} fuentes consultadas</span>
                           {expandedCitations[msg.id] ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
                         </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => toggleTelemetry(msg.id)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          padding: '3px 9px',
-                          background: '#FFFFFF',
-                          border: '1px solid var(--color-border)',
-                          borderRadius: '20px',
-                          fontSize: '0.71rem',
-                          fontWeight: 600,
-                          color: 'var(--color-text-secondary)',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        <Activity size={11} color="#6366F1" />
-                        <span>Vista previa: ¿Cómo actúa por detrás?</span>
-                        {expandedTelemetry[msg.id] ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                      </button>
-                    </div>
+                      </div>
+                    )}
 
                     {/* Citations Accordion */}
                     {expandedCitations[msg.id] && msg.citations && (
@@ -523,51 +484,6 @@ export const AgentChat: React.FC<AgentChatProps> = ({ onNavigateToUpload }) => {
                             </div>
                           </div>
                         ))}
-                      </div>
-                    )}
-
-                    {/* Telemetry Accordion (Detrás de escena) */}
-                    {expandedTelemetry[msg.id] && (
-                      <div style={{
-                        marginTop: '4px',
-                        padding: '12px',
-                        background: '#0F172A',
-                        color: '#E2E8F0',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: '0.74rem',
-                        lineHeight: 1.6,
-                        boxShadow: '0 4px 14px rgba(0,0,0,0.12)'
-                      }}>
-                        <div style={{ fontWeight: 700, color: '#38BDF8', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Cpu size={13} />
-                          <span>FLUJO INTERNO RAG (DETRÁS DE ESCENA)</span>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' }}>
-                          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '6px' }}>
-                            <div style={{ color: '#94A3B8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <Layers size={11} /> 1. Vectorización
-                            </div>
-                            <div>DashScope text-embedding-v3 (1024 dims)</div>
-                          </div>
-                          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '6px' }}>
-                            <div style={{ color: '#94A3B8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <Search size={11} /> 2. Búsqueda Vectorial
-                            </div>
-                            <div>MongoDB Atlas & Postgres HNSW Coseno</div>
-                          </div>
-                          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '6px' }}>
-                            <div style={{ color: '#94A3B8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <ShieldCheck size={11} /> 3. Filtro Cero Alucinación
-                            </div>
-                            <div>{msg.citations?.length || 0} fragmentos con similitud &gt;= 45%</div>
-                          </div>
-                          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '6px' }}>
-                            <div style={{ color: '#94A3B8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <Bot size={11} /> 4. Síntesis Grounded
-                            </div>
-                            <div>Qwen 3.8 Flash ({msg.execution_time_ms ? `${Math.round(msg.execution_time_ms)}ms` : 'tiempo real'})</div>
-                          </div>
-                        </div>
                       </div>
                     )}
 

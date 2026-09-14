@@ -264,7 +264,7 @@ export const App: React.FC = () => {
               {activeTab === 'upload' && 'Ingesta de Archivos'}
               {activeTab === 'drive' && 'Importador de Google Drive'}
               {activeTab === 'search' && 'Búsqueda Semántica'}
-              {activeTab === 'chat' && 'Agente IA Especializado (Qwen 3.8 Flash)'}
+              {activeTab === 'chat' && 'Agente IA Especializado'}
               {activeTab === 'knowledge' && 'Explorador de Memoria'}
               {activeTab === 'backup' && 'Respaldos Portables'}
               {activeTab === 'apikeys' && 'Gestión de API Keys'}
