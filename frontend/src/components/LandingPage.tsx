@@ -12,10 +12,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onOpenAuth,
   userEmail,
 }) => {
+  // En móviles, bloquear el scroll del documento para una experiencia nativa fija (app-like splash)
+  React.useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    const originalOverscroll = document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    document.body.style.overscrollBehavior = 'none';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+      document.body.style.overscrollBehavior = originalOverscroll;
+    };
+  }, []);
+
   return (
     <div
       className="landing-image-wrapper"
       onContextMenu={(e) => e.preventDefault()}
+      onTouchMove={(e) => {
+        // Prevenir scroll o arrastre elástico sobre la imagen en móviles
+        if (window.innerWidth <= 768) {
+          e.preventDefault();
+        }
+      }}
     >
       {/* Marco envolvente con la imagen responsiva de alta definición */}
       <div className="landing-image-canvas">

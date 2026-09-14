@@ -18,11 +18,11 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 | `src/vite-env.d.ts` | ~11 | ✅ OK | Declaración de tipos TypeScript para variables de entorno de Vite (`VITE_API_URL`). |
 | `src/App.tsx` | ~702 | ✅ OK | Estado central de navegación, botones interactivos de ayuda (?) en barra desktop y móvil, modal HUD de información por módulo y monitor SSE acotado. |
 | `src/index.css` | ~664 | ✅ OK | Variables de diseño, reset, estilos para `.nav-help-icon`, `.mobile-help-bubble`, navegación móvil/desktop, modales y animación de tipeo. |
-| `src/landing.css` | ~180 | ✅ OK | Estilos de la Landing Page: responsividad móvil/desktop, dock flotante inferior y protección contra copiado/arrastre. |
+| `src/landing.css` | ~269 | ✅ OK | Estilos de la Landing Page: responsividad móvil/desktop, viewport móvil bloqueado (100dvh, sin scroll ni balanceo indeseado), dock flotante inferior ergonómico con safe-area y protección visual. |
 | `src/types/index.ts` | ~132 | ✅ OK | Definiciones TypeScript: documentos, chunks con `embedding` opcional, salud del sistema, modos de consulta (`mode`, `query_mode`) y payload de chat. |
 | `src/services/api.ts` | ~215 | ✅ OK | Cliente Axios con interceptor multi-tenant y baseURL configurable por `VITE_API_URL` para despliegue desacoplado en producción. |
 | `src/services/sse.ts` | ~77 | ✅ OK | Cliente EventSource SSE con soporte de `VITE_API_URL` para monitoreo en tiempo real de ingestión. |
-| `src/components/LandingPage.tsx` | ~85 | ✅ OK | Vista inicial responsiva: versión panorámica para desktop y vertical para móvil, imagen protegida e inerte, botones exclusivos de interacción. |
+| `src/components/LandingPage.tsx` | ~121 | ✅ OK | Vista inicial responsiva: bloqueo dinámico de scroll en móvil (100dvh, touch-action none, overscroll-behavior none), versión panorámica desktop y vertical móvil, imagen inerte y dock HUD inferior. |
 | `src/components/AgentChat.tsx` | ~669 | ✅ OK | Chat de Agente IA con selector HUD de modo (`🎯 Extractos Precisos` vs `📚 Toda la Base`), parafraseo natural sin demoras de pensamiento, respuestas empáticas contextualizadas para temas no indexados, y sanitización defensiva de preguntas sugeridas puras sin párrafos. |
 | `src/components/PipelineMonitor.tsx` | ~206 | ✅ OK | Monitor SSE de ingesta con botón de cierre `(x)`, etapas de alto contraste y consola terminal oscura para eventos en tiempo real. |
 | `src/components/FileUploader.tsx` | ~170 | ✅ OK | Panel de subida de archivos locales con autoselección inteligente de la base conectada (MongoDB Atlas / PostgreSQL). |
