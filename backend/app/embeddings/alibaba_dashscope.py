@@ -92,7 +92,7 @@ class AlibabaDashScopeEmbeddings(BaseEmbeddingService):
 
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Error al conectar con el servicio de embeddings de Alibaba DashScope tras múltiples reintentos.",
+            detail="Error al conectar con el motor de embeddings tras múltiples reintentos.",
         )
 
     async def embed(self, texts: list[str]) -> list[list[float]]:

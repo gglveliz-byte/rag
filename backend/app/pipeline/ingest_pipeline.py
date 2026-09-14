@@ -88,7 +88,7 @@ async def run_ingestion_pipeline(
             job_id=job_id,
             status=JobStatus.EMBEDDING,
             progress=75,
-            stage_message=f"Vectorizando {len(chunks)} chunks con modelo Alibaba text-embedding-v3...",
+            stage_message=f"Generando vectores densos (1024 dims) para {len(chunks)} fragmentos...",
         )
         embedder = get_embedding_service()
         chunk_texts = [c.content for c in chunks]

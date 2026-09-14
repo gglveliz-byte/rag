@@ -14,6 +14,7 @@ import {
   Home,
   X,
   Bot,
+  HelpCircle,
 } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { AgentChat } from './components/AgentChat';
@@ -28,9 +29,70 @@ import { SearchPanel } from './components/SearchPanel';
 import { exportBackup, getSystemHealth, getUserProfile, logoutUser } from './services/api';
 import { SystemHealth, UserProfile } from './types';
 
+interface NavItemInfo {
+  id: string;
+  title: string;
+  badge: string;
+  shortDesc: string;
+  details: string;
+}
+
+const NAV_ITEMS_INFO: Record<string, NavItemInfo> = {
+  upload: {
+    id: 'upload',
+    title: 'Subir Archivo',
+    badge: 'Ingesta Local',
+    shortDesc: 'Carga y vectorización de archivos locales (PDF, Word, Excel, CSV, TXT, MD).',
+    details: 'Extrae texto y metadatos, aplica segmentación semántica adaptativa con detección de cortes temáticos y calcula vectores densos (1024 dimensiones) para almacenamiento en base de datos.',
+  },
+  drive: {
+    id: 'drive',
+    title: 'Google Drive',
+    badge: 'Cloud Import',
+    shortDesc: 'Importación directa de documentos públicos desde enlaces de Google Drive.',
+    details: 'Descarga e indexa archivos públicos directamente en tu base de datos vectorial sin necesidad de guardarlos primero en tu dispositivo local.',
+  },
+  search: {
+    id: 'search',
+    title: 'Búsqueda Semántica',
+    badge: 'Recuperación Vectorial',
+    shortDesc: 'Consultas semánticas directas por similitud matemática de vectores.',
+    details: 'Convierte tu pregunta en un vector denso y localiza los fragmentos más afines de tus documentos, permitiendo configurar umbrales de coincidencia y cantidad de resultados (Top-K).',
+  },
+  chat: {
+    id: 'chat',
+    title: 'Agente IA (Chat)',
+    badge: 'Cero Alucinación',
+    shortDesc: 'Asistente conversacional inteligente que razona sobre tus documentos.',
+    details: 'Responde preguntas de forma natural y fluida con parafraseo humano. Dispone de modo "Extractos Precisos" (Top-K) y "Toda la Base" (análisis integral en bruto) sin inventar información externa.',
+  },
+  knowledge: {
+    id: 'knowledge',
+    title: 'Explorador Memoria',
+    badge: 'Inspección de Chunks',
+    shortDesc: 'Visor técnico de documentos y fragmentos vectorizados.',
+    details: 'Permite examinar cada fragmento, su contenido, metadatos y la representación numérica vectorial densa (1024 dimensiones) con terminal HUD de inspección.',
+  },
+  backup: {
+    id: 'backup',
+    title: 'Respaldos (.ragpkg)',
+    badge: 'Portabilidad Total',
+    shortDesc: 'Exportación e importación de paquetes portables comprimidos.',
+    details: 'Descarga un paquete .ragpkg agnóstico con tus documentos y vectores ya calculados, facilitando migraciones entre bases de datos vectoriales sin recalcular embeddings.',
+  },
+  apikeys: {
+    id: 'apikeys',
+    title: 'API Keys para LLM',
+    badge: 'Consumo Externo',
+    shortDesc: 'Gestión de credenciales seguras para conectar tus propios agentes externos.',
+    details: 'Permite generar claves API de alta entropía (rke_live_...) con ejemplos listos para copiar en Python, cURL y JavaScript para consultar el motor RAG desde tus aplicaciones.',
+  },
+};
+
 export const App: React.FC = () => {
   const [viewMode, setViewMode] = useState<'landing' | 'workspace'>('landing');
   const [activeTab, setActiveTab] = useState<'upload' | 'drive' | 'search' | 'knowledge' | 'backup' | 'apikeys' | 'chat'>('upload');
+  const [activeInfoItem, setActiveInfoItem] = useState<NavItemInfo | null>(null);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showAuthBanner, setShowAuthBanner] = useState(false);
@@ -142,42 +204,114 @@ export const App: React.FC = () => {
             onClick={() => setActiveTab('upload')}
             className={`nav-item ${activeTab === 'upload' ? 'active' : ''}`}
           >
-            <UploadCloud size={16} /> Subir Archivo
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <UploadCloud size={16} /> Subir Archivo
+            </div>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.upload);
+              }}
+              className="nav-help-icon"
+              title="¿Qué es Subir Archivo?"
+            >
+              ?
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('drive')}
             className={`nav-item ${activeTab === 'drive' ? 'active' : ''}`}
           >
-            <Layers size={16} /> Google Drive
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <Layers size={16} /> Google Drive
+            </div>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.drive);
+              }}
+              className="nav-help-icon"
+              title="¿Qué es Google Drive?"
+            >
+              ?
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('search')}
             className={`nav-item ${activeTab === 'search' ? 'active' : ''}`}
           >
-            <Search size={16} /> Búsqueda Semántica
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <Search size={16} /> Búsqueda Semántica
+            </div>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.search);
+              }}
+              className="nav-help-icon"
+              title="¿Qué es Búsqueda Semántica?"
+            >
+              ?
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('chat')}
             className={`nav-item ${activeTab === 'chat' ? 'active' : ''}`}
           >
-            <Bot size={16} /> Agente IA (Chat)
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <Bot size={16} /> Agente IA (Chat)
+            </div>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.chat);
+              }}
+              className="nav-help-icon"
+              title="¿Qué es Agente IA (Chat)?"
+            >
+              ?
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('knowledge')}
             className={`nav-item ${activeTab === 'knowledge' ? 'active' : ''}`}
           >
-            <Database size={16} /> Explorador Memoria
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <Database size={16} /> Explorador Memoria
+            </div>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.knowledge);
+              }}
+              className="nav-help-icon"
+              title="¿Qué es Explorador Memoria?"
+            >
+              ?
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('backup')}
             className={`nav-item ${activeTab === 'backup' ? 'active' : ''}`}
           >
-            <Archive size={16} /> Respaldos (.ragpkg)
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <Archive size={16} /> Respaldos (.ragpkg)
+            </div>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.backup);
+              }}
+              className="nav-help-icon"
+              title="¿Qué son Respaldos (.ragpkg)?"
+            >
+              ?
+            </span>
           </button>
 
           <button
@@ -191,7 +325,19 @@ export const App: React.FC = () => {
             }}
             className={`nav-item ${activeTab === 'apikeys' ? 'active' : ''}`}
           >
-            <Key size={16} /> API Keys para LLM
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <Key size={16} /> API Keys para LLM
+            </div>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.apikeys);
+              }}
+              className="nav-help-icon"
+              title="¿Qué son API Keys para LLM?"
+            >
+              ?
+            </span>
           </button>
         </nav>
       </aside>
@@ -325,6 +471,16 @@ export const App: React.FC = () => {
             className={`mobile-tab-item ${activeTab === 'upload' ? 'active' : ''}`}
           >
             <UploadCloud size={14} /> <span>Subir Archivo</span>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.upload);
+              }}
+              className="mobile-help-bubble"
+              title="Información sobre Subir Archivo"
+            >
+              ?
+            </span>
           </button>
           <button
             type="button"
@@ -332,6 +488,16 @@ export const App: React.FC = () => {
             className={`mobile-tab-item ${activeTab === 'drive' ? 'active' : ''}`}
           >
             <Layers size={14} /> <span>Google Drive</span>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.drive);
+              }}
+              className="mobile-help-bubble"
+              title="Información sobre Google Drive"
+            >
+              ?
+            </span>
           </button>
           <button
             type="button"
@@ -339,6 +505,16 @@ export const App: React.FC = () => {
             className={`mobile-tab-item ${activeTab === 'search' ? 'active' : ''}`}
           >
             <Search size={14} /> <span>Búsqueda</span>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.search);
+              }}
+              className="mobile-help-bubble"
+              title="Información sobre Búsqueda"
+            >
+              ?
+            </span>
           </button>
           <button
             type="button"
@@ -346,6 +522,16 @@ export const App: React.FC = () => {
             className={`mobile-tab-item ${activeTab === 'chat' ? 'active' : ''}`}
           >
             <Bot size={14} /> <span>Agente IA</span>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.chat);
+              }}
+              className="mobile-help-bubble"
+              title="Información sobre Agente IA"
+            >
+              ?
+            </span>
           </button>
           <button
             type="button"
@@ -353,6 +539,16 @@ export const App: React.FC = () => {
             className={`mobile-tab-item ${activeTab === 'knowledge' ? 'active' : ''}`}
           >
             <Database size={14} /> <span>Memoria</span>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.knowledge);
+              }}
+              className="mobile-help-bubble"
+              title="Información sobre Memoria"
+            >
+              ?
+            </span>
           </button>
           <button
             type="button"
@@ -360,6 +556,16 @@ export const App: React.FC = () => {
             className={`mobile-tab-item ${activeTab === 'backup' ? 'active' : ''}`}
           >
             <Archive size={14} /> <span>Respaldos</span>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.backup);
+              }}
+              className="mobile-help-bubble"
+              title="Información sobre Respaldos"
+            >
+              ?
+            </span>
           </button>
           <button
             type="button"
@@ -374,6 +580,16 @@ export const App: React.FC = () => {
             className={`mobile-tab-item ${activeTab === 'apikeys' ? 'active' : ''}`}
           >
             <Key size={14} /> <span>API Keys</span>
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveInfoItem(NAV_ITEMS_INFO.apikeys);
+              }}
+              className="mobile-help-bubble"
+              title="Información sobre API Keys"
+            >
+              ?
+            </span>
           </button>
         </nav>
 
@@ -414,6 +630,101 @@ export const App: React.FC = () => {
           {activeTab === 'apikeys' && <ApiKeysManager />}
         </main>
       </div>
+
+      {/* Help / Information Modal for Navigation Items */}
+      {activeInfoItem && (
+        <div
+          onClick={() => setActiveInfoItem(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.5)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1.25rem',
+            animation: 'fadeIn 0.15s ease-out',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '16px',
+              padding: '1.5rem',
+              maxWidth: '440px',
+              width: '100%',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #E2E8F0',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+              <span
+                style={{
+                  fontSize: '0.68rem',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  background: '#F1F5F9',
+                  color: '#475569',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {activeInfoItem.badge}
+              </span>
+              <button
+                onClick={() => setActiveInfoItem(null)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#94A3B8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '4px',
+                  borderRadius: '6px',
+                }}
+                title="Cerrar"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <HelpCircle size={18} color="#2563EB" />
+              ¿Qué es {activeInfoItem.title}?
+            </h3>
+
+            <p style={{ fontSize: '0.85rem', color: '#1E293B', lineHeight: 1.55, marginBottom: '0.75rem', fontWeight: 500 }}>
+              {activeInfoItem.shortDesc}
+            </p>
+
+            <div style={{ fontSize: '0.78rem', color: '#64748B', lineHeight: 1.6, marginBottom: '1.25rem', background: '#F8FAFC', padding: '0.85rem', borderRadius: '10px', border: '1px solid #F1F5F9' }}>
+              {activeInfoItem.details}
+            </div>
+
+            <button
+              onClick={() => setActiveInfoItem(null)}
+              style={{
+                width: '100%',
+                padding: '0.65rem',
+                background: '#0F172A',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '10px',
+                fontWeight: 600,
+                fontSize: '0.82rem',
+                cursor: 'pointer',
+              }}
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Auth / Claim Modal */}
       <AuthModal

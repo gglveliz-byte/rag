@@ -245,7 +245,7 @@ pre,
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 7px 14px;
+    padding: 7px 12px;
     font-size: 0.78rem;
     font-weight: 600;
     color: var(--color-text-secondary);
@@ -264,6 +264,70 @@ pre,
   .mobile-tab-item:active {
     transform: scale(0.96);
   }
+  .mobile-help-bubble {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 1px solid #CBD5E1;
+    background: #FFFFFF;
+    color: #475569;
+    font-size: 0.58rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 2px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+  }
+  .mobile-tab-item.active .mobile-help-bubble {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.25);
+    color: #FFFFFF;
+  }
+  .mobile-help-bubble:active {
+    transform: scale(1.25);
+    background: #2563EB !important;
+    color: #FFFFFF !important;
+  }
+}
+
+.nav-help-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #CBD5E1;
+  background: #F8FAFC;
+  color: #64748B;
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.nav-item:hover .nav-help-icon {
+  border-color: #94A3B8;
+  color: #1E293B;
+  background: #FFFFFF;
+}
+
+.nav-item.active .nav-help-icon {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+}
+
+.nav-help-icon:hover {
+  transform: scale(1.18);
+  background: var(--color-black) !important;
+  color: #FFFFFF !important;
+  border-color: var(--color-black) !important;
 }
 
 /* --- Cards --- */

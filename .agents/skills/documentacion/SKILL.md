@@ -16,8 +16,8 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 | :--- | :---: | :---: | :--- |
 | `src/main.tsx` | ~10 | ✅ OK | Punto de entrada ReactDOM. |
 | `src/vite-env.d.ts` | ~11 | ✅ OK | Declaración de tipos TypeScript para variables de entorno de Vite (`VITE_API_URL`). |
-| `src/App.tsx` | ~430 | ✅ OK | Estado central de navegación, autenticación, monitor SSE acotado a pestañas de subida (`upload`/`drive`) con cierre `onClose` para evitar fugas entre vistas. |
-| `src/index.css` | ~685 | ✅ OK | Variables de diseño, reset, navegación móvil/desktop (`.mobile-tab-nav`, `.sidebar`), modales, y animación fluida de tipeo para el bot. |
+| `src/App.tsx` | ~702 | ✅ OK | Estado central de navegación, botones interactivos de ayuda (?) en barra desktop y móvil, modal HUD de información por módulo y monitor SSE acotado. |
+| `src/index.css` | ~664 | ✅ OK | Variables de diseño, reset, estilos para `.nav-help-icon`, `.mobile-help-bubble`, navegación móvil/desktop, modales y animación de tipeo. |
 | `src/landing.css` | ~180 | ✅ OK | Estilos de la Landing Page: responsividad móvil/desktop, dock flotante inferior y protección contra copiado/arrastre. |
 | `src/types/index.ts` | ~132 | ✅ OK | Definiciones TypeScript: documentos, chunks con `embedding` opcional, salud del sistema, modos de consulta (`mode`, `query_mode`) y payload de chat. |
 | `src/services/api.ts` | ~215 | ✅ OK | Cliente Axios con interceptor multi-tenant y baseURL configurable por `VITE_API_URL` para despliegue desacoplado en producción. |
@@ -71,8 +71,8 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 
 - **PostgreSQL Neon (Remoto):** ✅ Conectado y operativo (`ep-red-flower-aem6lhey-pooler...`). Alberga las tablas relacionales `users` y `api_keys` con integridad ACID, además de la extensión `pgvector`.
 - **MongoDB Atlas (Remoto):** ✅ Conectado y operativo (`cluster0.vrzzkve.mongodb.net`, base `ragdb`). Chunks de `neurochat.txt` indexados y validados.
-- **Embeddings Reales:** ✅ Alibaba Cloud DashScope `text-embedding-v3` (1024 dimensiones, batch size max 10) vía región Singapur (`dashscope-intl.aliyuncs.com`).
-- **Generación LLM:** ✅ Alibaba Cloud Qwen `qwen3.8-flash` vía región US Virginia (`ws-lghtetahpb40cmex.us-east-1.maas.aliyuncs.com`).
+- **Embeddings Reales:** ✅ Motor vectorial denso (1024 dimensiones, batch size max 10) de alta precisión semántica.
+- **Generación LLM:** ✅ Motor conversacional de inferencia ultra-rápida y fidelidad fáctica bajo política de Cero Alucinación.
 - **Modos de Consulta Dual:**
   - **Extracto Preciso:** Recupera los top-k fragmentos más cercanos por similitud coseno con badge de coincidencia semántica.
   - **Toda la Base (Completo en Bruto):** Extrae la totalidad de fragmentos registrados del documento en bruto y genera un análisis exhaustivo/panorámico con badge de consulta integral.
