@@ -1,9 +1,10 @@
-"""Entrypoint launcher for RAG Knowledge Engine with WindowsSelectorEventLoopPolicy.
+"""Entrypoint launcher for RAG Knowledge Engine.
 
-Enforces SelectorEventLoop with loop='none' so Uvicorn does not override WindowsSelectorEventLoopPolicy.
-This enables async psycopg3 (PostgreSQL pgvector) and motor (MongoDB Atlas) to run simultaneously on Windows.
+Supports Windows (WindowsSelectorEventLoopPolicy for async psycopg3/motor)
+and Linux/Production/Render (standard loop, PORT and HOST from environment).
 """
 import asyncio
+import os
 import sys
 import uvicorn
 
@@ -11,16 +12,23 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 if __name__ == "__main__":
-    config = uvicorn.Config(
-        "app.main:app",
-        host="127.0.0.1",
-        port=8000,
-        loop="none",
-    )
-    server = uvicorn.Server(config)
-    loop = asyncio.WindowsSelectorEventLoopPolicy().new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(server.serve())
-    finally:
-        loop.close()
+    host = os.environ.get("HOST", "0.0.0.0")
+    port = int(os.environ.get("PORT", 8000))
+
+    if sys.platform == "win32":
+        config = uvicorn.Config(
+            "app.main:app",
+            host="127.0.0.1",
+            port=port,
+            loop="none",
+        )
+        server = uvicorn.Server(config)
+        loop = asyncio.WindowsSelectorEventLoopPolicy().new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(server.serve())
+        finally:
+            loop.close()
+    else:
+        uvicorn.run("app.main:app", host=host, port=port, log_level="info")
+

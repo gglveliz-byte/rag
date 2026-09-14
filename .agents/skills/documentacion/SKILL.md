@@ -38,6 +38,7 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 
 | Archivo | Líneas Aprox. | Límite (<800) | Responsabilidad Principal |
 | :--- | :---: | :---: | :--- |
+| `run.py` | ~33 | ✅ OK | Lanzador de entrada agnóstico: soporte para Linux/Render con lectura de `$PORT` y `$HOST`, y WindowsSelectorEventLoopPolicy para Windows. |
 | `app/main.py` | ~125 | ✅ OK | Inicialización FastAPI, CORS, montaje de rutas (incluyendo `routes_chat`), lifespan y configuración de loop Windows. |
 | `app/core/config.py` | ~67 | ✅ OK | Configuración con Pydantic Settings (.env) con soporte para DashScope Embeddings (batch_size=10, Singapur) y Qwen LLM (`qwen3.8-flash`, US Virginia). |
 | `app/schemas/chat.py` | ~45 | ✅ OK | Schemas Pydantic para `ChatRequest` (con campo `mode`), `ChatResponse` (con `query_mode`, `is_conversational`, `primary_source`) y `CitationItem`. |
