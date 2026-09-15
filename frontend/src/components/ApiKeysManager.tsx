@@ -1,20 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { Key, Plus, Copy, Check, Trash2, ShieldAlert, Sparkles, Server } from 'lucide-react';
+import { Key, Plus, Copy, Check, Trash2, ShieldAlert, Sparkles, Server, BookOpen } from 'lucide-react';
 import { createApiKey, listApiKeys, revokeApiKey } from '../services/api';
-import { APIKeyItem } from '../types';
+import { APIKeyItem, UserProfile } from '../types';
 
 type CodeTab = 'curl' | 'python' | 'javascript';
 
-export const ApiKeysManager: React.FC = () => {
+interface ApiKeysManagerProps {
+  userProfile?: UserProfile | null;
+  onOpenAuth?: () => void;
+}
+
+export const ApiKeysManager: React.FC<ApiKeysManagerProps> = ({ userProfile, onOpenAuth }) => {
   const [keys, setKeys] = useState<APIKeyItem[]>([]);
   const [keyName, setKeyName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [activeTab, setActiveTab] = useState<CodeTab>('curl');
 
   const fetchKeys = async () => {
+    if (!userProfile) {
+      setKeys([]);
+      return;
+    }
     try {
       const data = await listApiKeys();
       setKeys(data);
@@ -25,18 +35,25 @@ export const ApiKeysManager: React.FC = () => {
 
   useEffect(() => {
     fetchKeys();
-  }, []);
+  }, [userProfile]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!keyName.trim()) return;
+    if (!userProfile) {
+      onOpenAuth?.();
+      return;
+    }
     setLoading(true);
+    setErrorMessage(null);
     try {
       const created = await createApiKey(keyName);
       setNewlyCreatedKey(created.raw_key || null);
       setKeyName('');
       fetchKeys();
-    } catch (err) {
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || 'Error al generar la clave API.';
+      setErrorMessage(msg);
       console.error('Error creating key:', err);
     } finally {
       setLoading(false);
@@ -116,7 +133,7 @@ data = response.json()
 
 # Imprimir los fragmentos recuperados para alimentar el contexto de tu LLM
 print(f"Total de fragmentos: {len(data.get('chunks', []))}")
-print("Contexto formateado para prompt:\n", data.get("context_string"))`;
+print("Contexto formateado para prompt:\n", data.get("context_text"))`;
     }
 
     return `// Consumo desde Node.js o frontend moderno (Fetch API)
@@ -134,7 +151,7 @@ const response = await fetch("${dynamicEndpoint}", {
 });
 
 const data = await response.json();
-console.log("Contexto listo para LLM:", data.context_string);`;
+console.log("Contexto listo para LLM:", data.context_text);`;
   };
 
   return (
@@ -180,6 +197,56 @@ console.log("Contexto listo para LLM:", data.context_string);`;
             </button>
           </form>
         </div>
+
+        {/* Guest Mode Notice */}
+        {!userProfile && (
+          <div style={{
+            marginTop: 'var(--space-4)',
+            padding: '0.85rem 1.15rem',
+            background: '#F8FAFC',
+            border: '1px solid #E2E8F0',
+            borderRadius: 'var(--radius-md)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem', color: '#334155' }}>
+              <Key size={16} color="#0284C7" />
+              <span>
+                <strong>Modo Exploración:</strong> Inicia sesión para generar tus claves persistentes vinculadas a tu base documental en PostgreSQL Neon. Puedes inspeccionar y copiar los ejemplos de integración abajo.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="btn btn-primary"
+              style={{ padding: '0.45rem 0.95rem', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              Iniciar Sesión / Registrarse
+            </button>
+          </div>
+        )}
+
+        {/* Error Alert */}
+        {errorMessage && (
+          <div style={{
+            marginTop: 'var(--space-3)',
+            padding: '0.65rem 1rem',
+            background: '#FEF2F2',
+            border: '1px solid #FCA5A5',
+            borderRadius: 'var(--radius-md)',
+            color: '#B91C1C',
+            fontSize: '0.78rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <ShieldAlert size={15} />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
         {/* Newly created raw key alert (Stripe-style secret reveal) */}
         {newlyCreatedKey && (
@@ -326,6 +393,54 @@ console.log("Contexto listo para LLM:", data.context_string);`;
             ))}
           </div>
         )}
+      </div>
+
+      {/* Technical Reference & API Contract Card */}
+      <div className="card" style={{ padding: 'var(--space-6)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 'var(--space-4)' }}>
+          <span className="badge badge-info" style={{ fontSize: '0.72rem', padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <BookOpen size={12} /> Especificación REST
+          </span>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-black)', margin: 0 }}>
+            Estructura de Consulta y Respuesta
+          </h3>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+          <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid #E2E8F0' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Petición (JSON Body)
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.78rem', color: '#475569' }}>
+              <div>
+                <strong style={{ color: '#0F172A', fontFamily: 'monospace' }}>query</strong> (string, obligatorio): La pregunta en lenguaje natural a resolver con la base de conocimiento.
+              </div>
+              <div>
+                <strong style={{ color: '#0F172A', fontFamily: 'monospace' }}>top_k</strong> (entero, 1-20): Cantidad máxima de fragmentos más relevantes a recuperar (default: 5).
+              </div>
+              <div>
+                <strong style={{ color: '#0F172A', fontFamily: 'monospace' }}>score_threshold</strong> (decimal, 0-1): Filtro mínimo de similitud semántica (default: 0.60).
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: '#F8FAFC', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid #E2E8F0' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Respuesta (JSON Output)
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.78rem', color: '#475569' }}>
+              <div>
+                <strong style={{ color: '#0F172A', fontFamily: 'monospace' }}>context_text</strong> (string): Bloque preformateado con citas de página y fuente, listo para el prompt de tu LLM.
+              </div>
+              <div>
+                <strong style={{ color: '#0F172A', fontFamily: 'monospace' }}>chunks</strong> (lista): Fragmentos con similitud matemática (<code style={{ fontSize: '0.74rem' }}>similarity_score</code>), <code style={{ fontSize: '0.74rem' }}>source_file</code> y metadatos.
+              </div>
+              <div>
+                <strong style={{ color: '#0F172A', fontFamily: 'monospace' }}>execution_time_ms</strong> (número): Latencia de la consulta vectorial en milisegundos.
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Code Snippet integration card — Modern Swiss Studio Terminal */}

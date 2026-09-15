@@ -315,14 +315,7 @@ export const App: React.FC = () => {
           </button>
 
           <button
-            onClick={() => {
-              if (!userProfile) {
-                setAuthMode('login');
-                setAuthModalOpen(true);
-              } else {
-                setActiveTab('apikeys');
-              }
-            }}
+            onClick={() => setActiveTab('apikeys')}
             className={`nav-item ${activeTab === 'apikeys' ? 'active' : ''}`}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -569,14 +562,7 @@ export const App: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={() => {
-              if (!userProfile) {
-                setAuthMode('login');
-                setAuthModalOpen(true);
-              } else {
-                setActiveTab('apikeys');
-              }
-            }}
+            onClick={() => setActiveTab('apikeys')}
             className={`mobile-tab-item ${activeTab === 'apikeys' ? 'active' : ''}`}
           >
             <Key size={14} /> <span>API Keys</span>
@@ -627,7 +613,15 @@ export const App: React.FC = () => {
 
           {activeTab === 'backup' && <BackupManager health={health} />}
 
-          {activeTab === 'apikeys' && <ApiKeysManager />}
+          {activeTab === 'apikeys' && (
+            <ApiKeysManager
+              userProfile={userProfile}
+              onOpenAuth={() => {
+                setAuthMode('login');
+                setAuthModalOpen(true);
+              }}
+            />
+          )}
         </main>
       </div>
 

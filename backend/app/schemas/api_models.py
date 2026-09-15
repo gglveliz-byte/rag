@@ -79,6 +79,7 @@ class RAGQueryResponse(BaseModel):
     query: str
     results_count: int
     context_text: str = Field(description="Pre-formatted text block ready to insert into LLM prompt")
+    context_string: str = Field(default="", description="Alias for context_text for client compatibility")
     chunks: list[RAGChunkItem]
     execution_time_ms: float
 

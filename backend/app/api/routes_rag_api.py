@@ -74,6 +74,8 @@ async def query_knowledge_base_for_llm(
         query=payload.query,
         results_count=len(chunk_items),
         context_text=context_text,
+        context_string=context_text,
         chunks=chunk_items,
         execution_time_ms=execution_time_ms,
     )
+

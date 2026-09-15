@@ -16,8 +16,8 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 | :--- | :---: | :---: | :--- |
 | `src/main.tsx` | ~10 | ✅ OK | Punto de entrada ReactDOM. |
 | `src/vite-env.d.ts` | ~11 | ✅ OK | Declaración de tipos TypeScript para variables de entorno de Vite (`VITE_API_URL`). |
-| `src/App.tsx` | ~702 | ✅ OK | Estado central de navegación, botones interactivos de ayuda (?) en barra desktop y móvil, modal HUD de información por módulo y monitor SSE acotado. |
-| `src/index.css` | ~664 | ✅ OK | Variables de diseño, reset, estilos para `.nav-help-icon`, `.mobile-help-bubble`, navegación móvil/desktop, modales y animación de tipeo. |
+| `src/App.tsx` | ~734 | ✅ OK | Estado central de navegación, acceso libre y directo a la pestaña de API Keys tanto para invitados como usuarios autenticados, botones interactivos de ayuda (?) en barra desktop y móvil, modal HUD de información y monitor SSE acotado. |
+| `src/index.css` | ~769 | ✅ OK | Variables de diseño, reset, estilos para `.nav-help-icon`, `.mobile-help-bubble`, navegación móvil/desktop, modales y animación de tipeo. |
 | `src/landing.css` | ~269 | ✅ OK | Estilos de la Landing Page: responsividad móvil/desktop, viewport móvil bloqueado (100dvh, sin scroll ni balanceo indeseado), dock flotante inferior ergonómico con safe-area y protección visual. |
 | `src/types/index.ts` | ~132 | ✅ OK | Definiciones TypeScript: documentos, chunks con `embedding` opcional, salud del sistema, modos de consulta (`mode`, `query_mode`) y payload de chat. |
 | `src/services/api.ts` | ~215 | ✅ OK | Cliente Axios con interceptor multi-tenant y baseURL configurable por `VITE_API_URL` para despliegue desacoplado en producción. |
@@ -30,7 +30,7 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 | `src/components/SearchPanel.tsx` | ~190 | ✅ OK | Panel de consulta vectorial semántica con slider de umbral, top-k y autoselección de base activa. |
 | `src/components/KnowledgeExplorer.tsx` | ~268 | ✅ OK | Explorador interactivo de documentos y chunks con conteo visible de fragmentos, badges de vectores densos (1024 dims), preview numérico y visor terminal del vector completo. |
 | `src/components/BackupManager.tsx` | ~140 | ✅ OK | Panel de exportación e importación de paquetes `.ragpkg` agnósticos. |
-| `src/components/ApiKeysManager.tsx` | ~310 | ✅ OK | Panel rediseñado de API Keys con terminal estilo macOS, URL backend 100% dinámica, tabs de lenguaje (cURL, Python, JS), copiado y gestión de claves. |
+| `src/components/ApiKeysManager.tsx` | ~569 | ✅ OK | Panel de API Keys con aviso en modo exploración, tarjeta de especificación REST y parámetros (query, top_k, threshold, context_text, chunks), terminal estilo macOS con URL dinámica, tabs (cURL, Python, JS) y gestión de claves. |
 | `src/components/AuthModal.tsx` | ~250 | ✅ OK | Modal de autenticación rediseñado con control segmentado (Iniciar Sesión / Crear Cuenta), show/hide password, confirmación y tarjeta suiza sólida. |
 | `src/components/TargetStoreSelector.tsx` | ~101 | ✅ OK | Selector visual de destino vectorial (PostgreSQL, MongoDB Atlas, Multi-Destino) con dots de estado. |
 
@@ -43,6 +43,7 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 | `run.py` | ~33 | ✅ OK | Lanzador de entrada agnóstico: soporte para Linux/Render con lectura de `$PORT` y `$HOST`, y WindowsSelectorEventLoopPolicy para Windows. |
 | `app/main.py` | ~135 | ✅ OK | Inicialización FastAPI, CORS con soporte wildcard regex y lista explícita, montaje de rutas, lifespan y configuración de loop. |
 | `app/core/config.py` | ~67 | ✅ OK | Configuración con Pydantic Settings (.env) con soporte para DashScope Embeddings (batch_size=10, Singapur) y Qwen LLM (`qwen3.8-flash`, US Virginia). |
+| `app/schemas/api_models.py` | ~130 | ✅ OK | Modelos Pydantic de la API: `RAGQueryRequest`, `RAGQueryResponse` (con `context_text` y `context_string`), `RAGChunkItem`, `SearchRequest`, `JobResponse`. |
 | `app/schemas/chat.py` | ~45 | ✅ OK | Schemas Pydantic para `ChatRequest` (con campo `mode`), `ChatResponse` (con `query_mode`, `is_conversational`, `primary_source`) y `CitationItem`. |
 | `app/llm/llm_client.py` | ~97 | ✅ OK | Cliente HTTP async con httpx (timeout extendido a 90s) para el endpoint OpenAI-compatible de Qwen 3.8 Flash. |
 | `app/llm/agent_service.py` | ~377 | ✅ OK | Orquestador RAG dual con parafraseo ágil y natural, generador de preguntas sugeridas dinámicas y puras (sin respuestas ni párrafos incrustados), respuesta empática contextualizada para temas no indexados y modos `precise` y `full`. |
@@ -54,7 +55,7 @@ Garantiza que ningún archivo supere las **800 líneas** y que la arquitectura s
 | `app/api/routes_knowledge.py` | ~120 | ✅ OK | Endpoints para listar, inspeccionar y borrar chunks de una sesión o usuario con retorno de embeddings. |
 | `app/api/routes_backup.py` | ~140 | ✅ OK | Generación de backup `.ragpkg` (JSONL + Gzip) y restauración en base vectorial. |
 | `app/api/routes_auth.py` | ~295 | ✅ OK | Registro, login, emisión de API Keys y claim persistidos en PostgreSQL Neon relacional con fallback en memoria. |
-| `app/api/routes_rag_api.py` | ~130 | ✅ OK | Endpoint público `POST /api/v1/rag/query` autenticado vía API Key para LLMs y agentes. |
+| `app/api/routes_rag_api.py` | ~82 | ✅ OK | Endpoint público `POST /api/v1/rag/query` autenticado vía API Key para LLMs y agentes (retorna `context_text` y `context_string`). |
 | `app/chunking/semantic_chunker.py` | ~180 | ✅ OK | Algoritmo de *Semantic Chunking* adaptativo por oraciones y percentil de distancia coseno. |
 | `app/embeddings/alibaba_dashscope.py` | ~117 | ✅ OK | Cliente API compatible con DashScope para `text-embedding-v3` (1024 dims) con límite de batch forzado a 10 items. |
 | `app/embeddings/embedding_factory.py` | ~26 | ✅ OK | Factoría de embeddings: selector automático entre DashScope y Mock según configuración. |
